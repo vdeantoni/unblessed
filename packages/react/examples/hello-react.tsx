@@ -13,6 +13,8 @@ import { BigText, Box, render, Text } from "../dist/index.js";
 import { initCore } from "@unblessed/core";
 import { NodeRuntime } from "@unblessed/node";
 import { Spacer } from "../src";
+import { Button } from "../src/components/Button";
+import { Input } from "../src/components/Input";
 initCore(new NodeRuntime());
 
 const screen = new Screen({ smartCSR: true, fullUnicode: true });
@@ -22,13 +24,14 @@ const App = () => (
     <BigText>UNBLESSED</BigText>
 
     <Box
-      flexDirection="column"
+      flexDirecti
+      on="column"
       padding={1}
       border={1}
       borderStyle="single"
       borderColor="cyan"
-      alignItems="center"
     >
+      <Input borderColor="blue" />
       <Text>@unblessed/react Border Showcase</Text>
     </Box>
 
@@ -101,26 +104,22 @@ const App = () => (
 
     {/* Flexbox with borders and spacer */}
     <Box flexDirection="row" gap={1}>
-      <Box
-        width={20}
-        border={1}
-        borderStyle="single"
-        borderColor="blue"
-        padding={1}
-      >
-        <Text>Left</Text>
+      <Box width={20} border={1} borderStyle="single" borderColor="blue">
+        <Button hoverBg="red" focusBg="yellow">
+          {"{center}LEFT{/center}"}
+        </Button>
       </Box>
 
       <Spacer />
 
       <Box
-        width={20}
+        width={30}
+        flexDirection="column"
         border={1}
         borderStyle="single"
         borderColor="blue"
-        padding={1}
       >
-        <Text>Right</Text>
+        <Input borderStyle="classic" />
       </Box>
     </Box>
 

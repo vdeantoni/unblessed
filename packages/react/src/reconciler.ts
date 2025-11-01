@@ -198,6 +198,16 @@ function propsToWidgetOptions(props: Props): any {
     }
   }
 
+  if (props.hoverBg) {
+    widgetOptions.hoverBg = props.hoverBg;
+  }
+
+  if (props.focusBg) {
+    widgetOptions.focusEffects = {
+      border: { fg: props.focusBg },
+    };
+  }
+
   // Ensure style.border exists and has border colors
   // unblessed reads colors from style.border.fg, not border.fg
   if (widgetOptions.border) {
@@ -210,9 +220,11 @@ function propsToWidgetOptions(props: Props): any {
     }
   }
 
-  // Tags
   if (props.tags !== undefined) {
     widgetOptions.tags = props.tags;
+  }
+  if (props.autoFocus !== undefined) {
+    widgetOptions.autoFocus = props.autoFocus;
   }
 
   return widgetOptions;

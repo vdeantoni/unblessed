@@ -98,7 +98,7 @@ class Textarea extends Input {
     }
 
     const lpos = get ? this.lpos : this._getCoords();
-    if (!lpos) return;
+    if (!lpos || !this._clines?.length) return;
 
     let last = this._clines[this._clines.length - 1];
     const program = this.screen.program;

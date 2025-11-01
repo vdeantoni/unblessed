@@ -2,7 +2,15 @@
  * widget-sync.ts - Synchronize Yoga layout to unblessed widgets
  */
 
-import { BigText, Box, Element, Screen, Text } from "@unblessed/core";
+import {
+  BigText,
+  Box,
+  Button,
+  Element,
+  Screen,
+  Text,
+  Textbox,
+} from "@unblessed/core";
 import Yoga from "yoga-layout";
 import type { ComputedLayout, LayoutNode } from "./types.js";
 
@@ -73,10 +81,22 @@ export function syncWidgetWithYoga(node: LayoutNode, screen: Screen): Element {
         WidgetClass = BigText;
         break;
       }
+      case "button": {
+        WidgetClass = Button;
+        break;
+      }
+      case "input": {
+        WidgetClass = Textbox;
+        break;
+      }
     }
 
     node.widget = new WidgetClass({
       screen,
+      tags: true,
+      mouse: true,
+      keys: true,
+      inputOnFocus: true,
       top: top,
       left: left,
       width: layout.width,

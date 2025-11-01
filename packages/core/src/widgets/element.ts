@@ -465,10 +465,9 @@ class Element extends Node {
 
   /**
    * Check if this element can receive keyboard focus.
-   * Elements are focusable if they have tabIndex >= -1 and are visible/attached.
+   * Elements are focusable if they have tabIndex >= -1.
    */
   isFocusable(): boolean {
-    if (this.detached || !this.visible) return false;
     return this.options.tabIndex !== undefined && this.options.tabIndex >= -1;
   }
 
@@ -1500,7 +1499,7 @@ class Element extends Node {
       expr = left.split(/(?=\+|-)/);
       left = expr[0];
       left = +left.slice(0, -1) / 100;
-      left = (parent.width * left) | 0;
+      left = ((parent?.width || 0) * left) | 0;
       left += +(expr[1] || 0);
       if (this.position.left === "center") {
         left -= (this._getWidth(get) / 2) | 0;
@@ -1516,11 +1515,11 @@ class Element extends Node {
         (this.position.left != null || this.position.right == null) &&
         this.position.left !== "center"
       ) {
-        left += this.parent.ileft;
+        left += this.parent?.ileft || 0;
       }
     }
 
-    return (parent.aleft || 0) + left;
+    return (parent?.aleft || 0) + left;
   }
 
   get aleft(): number {
@@ -1562,7 +1561,7 @@ class Element extends Node {
       expr = top.split(/(?=\+|-)/);
       top = expr[0];
       top = +top.slice(0, -1) / 100;
-      top = (parent.height * top) | 0;
+      top = ((parent?.height || 0) * top) | 0;
       top += +(expr[1] || 0);
       if (this.position.top === "center") {
         top -= (this._getHeight(get) / 2) | 0;
@@ -1578,11 +1577,11 @@ class Element extends Node {
         (this.position.top != null || this.position.bottom == null) &&
         this.position.top !== "center"
       ) {
-        top += this.parent.itop;
+        top += this.parent?.itop || 0;
       }
     }
 
-    return (parent.atop || 0) + top;
+    return (parent?.atop || 0) + top;
   }
 
   get atop(): number {
