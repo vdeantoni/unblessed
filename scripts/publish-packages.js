@@ -39,7 +39,7 @@ const PUBLISH_ORDER = [
   "@unblessed/blessed",
 
   // Create unblessed package
-  "@unblessed/create-unblessed",
+  "create-unblessed",
 ];
 
 console.log("\n📦 Publishing all packages to npm...\n");
