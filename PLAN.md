@@ -919,64 +919,105 @@ render(<App />);
 
 ## Current Status
 
-**Last Updated**: 2025-10-30
-**Current Phase**: Phase 1 - Core Enhancements + Layout Foundation (In Progress)
+**Last Updated**: 2025-11-01
+**Current Phase**: Phase 5 - Polish & Production Readiness
 
-### Phase 0: Layout Foundation (NEW)
-- [x] ✅ Create @unblessed/layout package - **COMPLETE**
+### Phase 0: Layout Foundation ✅ **COMPLETE**
+- [x] ✅ Create @unblessed/layout package
   - Yoga integration for flexbox layouts
   - LayoutManager API for creating and managing layout nodes
   - Yoga → unblessed widget synchronization
   - 34 tests passing (yoga-node, layout-engine, widget-sync)
-  - Ready for @unblessed/react integration
   - Location: `packages/layout/`
 
-### Phase 1: Core Enhancements + Foundation
-- [x] ✅ Enhance Border interface (per-side colors, dim) - **COMPLETE**
+### Phase 1: Core Enhancements + Foundation ✅ **COMPLETE**
+- [x] ✅ Enhance Border interface (per-side colors, dim)
   - Added `borderTopColor`, `borderBottomColor`, `borderLeftColor`, `borderRightColor`
   - Added `borderDim`, `borderTopDim`, `borderBottomDim`, `borderLeftDim`, `borderRightDim`
   - Updated rendering in `element.ts` with `getBorderAttr()` helper
   - 10 new comprehensive tests added
-  - All 2112 tests passing
-  - Examples: `border-showcase.ts`, `border-debug.ts`, `border-simple-test.ts`
-- [x] ✅ Update border rendering in Element - **COMPLETE**
-- [ ] Add Spacer widget (deferred - will implement in @unblessed/react)
-- [ ] Create @unblessed/react package
-- [ ] Set up build config
-- [ ] Install dependencies
+  - All tests passing
+- [x] ✅ Create @unblessed/react package
+  - Package structure set up
+  - Build config (tsup with ESM/CJS)
+  - Dependencies installed (yoga-layout, react-reconciler)
+  - Location: `packages/react/`
 
-### Phase 2: Box Component
-- [ ] Create virtual DOM structure
-- [ ] Implement styles.ts (Yoga style application)
-- [ ] Implement React reconciler
-- [ ] Create Box component
-- [ ] Layout calculation & widget creation
-- [ ] Tests
+### Phase 2: Box Component ✅ **COMPLETE**
+- [x] ✅ Create virtual DOM structure (dom.ts)
+  - DOMNode and TextNode interfaces
+  - Tree manipulation (appendChild, removeChild, etc.)
+- [x] ✅ Implement React reconciler (reconciler.ts)
+  - Full React reconciler configuration
+  - LayoutManager integration
+  - Props splitting (flexbox vs widget options)
+- [x] ✅ Create Box component
+  - Full flexbox props support
+  - Border props (Ink-style API)
+  - Color conversion
+- [x] ✅ Layout calculation & widget creation
+  - Yoga calculations working
+  - widget-sync.ts for syncing LayoutNode → Widget
+  - Absolute positioning from Yoga
 
-### Phase 3: Text Component
-- [ ] Port text wrapping logic
-- [ ] Implement text measurement
-- [ ] Create Text component
-- [ ] Yoga measure function integration
-- [ ] Tests
+### Phase 3: Text Component ✅ **MOSTLY COMPLETE**
+- [x] ✅ Create Text component (Text.tsx)
+  - Styling props (color, bold, italic, etc.)
+  - Basic text rendering working
+- [x] ✅ Create Spacer component (Spacer.tsx)
+  - Simple flexGrow={1} wrapper
+- [x] ✅ Create BigText component (BigText.tsx)
+  - Large ASCII art text
+  - Auto font size calculations
+- [x] ✅ Create Button component (Button.tsx)
+  - Interactive button with hover/focus states
+- [x] ✅ Create Input component (Input.tsx)
+  - Text input with autoFocus support
+- [ ] ⚠️ Port text wrapping logic (DEFERRED)
+  - Basic text works, wrapping not critical for MVP
+- [ ] ⚠️ Yoga measure function integration (DEFERRED)
 
-### Phase 4: Render Pipeline
-- [ ] Implement render() function
-- [ ] Layout calculation
-- [ ] Widget creation/update
-- [ ] Update handling
-- [ ] Tests
+### Phase 4: Render Pipeline ✅ **COMPLETE**
+- [x] ✅ Implement render() function (render.ts)
+  - Creates Screen and LayoutManager
+  - Mounts React tree
+  - Returns instance with unmount/rerender
+- [x] ✅ Layout calculation
+  - Yoga calculates on each commit
+  - Border adjustment for unblessed coordinate system
+- [x] ✅ Widget creation/update
+  - syncWidgetWithYoga() creates/updates widgets
+  - Props flow: React → LayoutNode → YogaNode → Widget
+- [x] ✅ Update handling
+  - commitUpdate updates both DOM and Yoga
+  - Re-renders on state changes
 
-### Phase 5: Testing & Examples
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] Example apps
-- [ ] Documentation
+### Phase 5: Testing & Examples 🚧 **IN PROGRESS**
+- [x] ✅ Example app (hello-react.tsx)
+  - Comprehensive example with all features
+  - Border showcase, buttons, inputs
+- [x] ✅ Documentation (README.md)
+  - Installation guide
+  - Component API reference
+  - Architecture explanation
+  - Examples
+- [ ] ⚠️ Unit tests (MINIMAL)
+  - 4 basic tests in render.test.tsx
+  - Need comprehensive component tests
+- [ ] ⚠️ Integration tests (NEEDED)
+  - Layout calculations
+  - State updates
+  - Event handling
+- [ ] ⚠️ Test coverage target (NEEDED)
+  - Goal: 70%+ coverage
 
-### Phase 6: Future
+### Phase 6: Future Enhancements 📋 **PLANNED**
 - [ ] Hooks (useInput, useApp, useFocus)
-- [ ] Widget wrappers
-- [ ] Advanced features
+- [ ] Text wrapping and overflow handling
+- [ ] More widget wrappers (List, ListTable, ProgressBar, etc.)
+- [ ] Performance optimization
+- [ ] Animation support
+- [ ] Context-based theming
 
 ## Key Files & Their Purpose
 
@@ -1008,15 +1049,93 @@ render(<App />);
 - **React Reconciler API**: https://github.com/facebook/react/tree/main/packages/react-reconciler
 - **Yoga Layout**: https://yogalayout.com/docs
 
-## Next Steps
+## What's Next?
 
-1. Review and approve this plan
-2. Start Phase 1: Enhance core Border interface and create Spacer widget
-3. Set up @unblessed/react package structure
-4. Begin implementation following phases sequentially
+### Immediate Priorities (Next 1-2 weeks)
+
+#### 1. **Testing** 🎯 **HIGH PRIORITY**
+The React package is functionally complete but severely under-tested:
+
+**Current:** 4 basic tests
+**Goal:** 70%+ coverage
+
+**Tasks:**
+- [ ] Component tests (Box, Text, BigText, Button, Input, Spacer)
+- [ ] Layout calculation tests (flexbox, gap, padding, borders)
+- [ ] Props conversion tests (flexbox props → Yoga, widget props → options)
+- [ ] Update/re-render tests (state changes, prop updates)
+- [ ] Focus navigation tests (Button, Input interactions)
+- [ ] Border color tests (per-side colors, dim, conversion)
+
+**Location:** `packages/react/__tests__/`
+
+#### 2. **Event Handling Hooks** 🎯 **HIGH PRIORITY**
+React components need interactive capabilities:
+
+**Hooks to implement:**
+- [ ] `useInput(handler)` - Keyboard input handling
+- [ ] `useApp()` - App lifecycle (exit, etc.)
+- [ ] `useFocus()` - Focus management for Tab navigation
+
+**Reference:** Ink's hooks implementation (`ink/src/hooks/`)
+
+**Location:** `packages/react/src/hooks/`
+
+#### 3. **Text Wrapping** 🔧 **MEDIUM PRIORITY**
+Currently text doesn't wrap/truncate:
+
+**Tasks:**
+- [ ] Port Ink's wrap-text.ts
+- [ ] Add Yoga measure function for text nodes
+- [ ] Support wrap modes (wrap, truncate, truncate-middle, etc.)
+- [ ] Handle ANSI codes correctly
+
+**Reference:** `ink/src/wrap-text.ts`, `ink/src/measure-text.ts`
+
+**Location:** `packages/react/src/wrap-text.ts`, `packages/react/src/measure-text.ts`
+
+#### 4. **Bug Fixes** 🐛
+- [ ] Fix focus navigation edge cases (seen in focus-navigation.test.js)
+- [ ] Verify padding calculations are correct
+- [ ] Test with different terminal sizes
+
+### Future Work (Next 1-2 months)
+
+#### 5. **More Component Wrappers**
+Wrap existing unblessed widgets as React components:
+
+**Priority widgets:**
+- [ ] List - Scrollable list with selection
+- [ ] ListTable - Table with rows/columns
+- [ ] ProgressBar - Progress indicator
+- [ ] Checkbox - Checkbox input
+- [ ] RadioButton/RadioSet - Radio buttons
+- [ ] FileManager - File picker
+- [ ] Table - Data table
+
+**Pattern:** Create React components that internally use unblessed widgets
+
+#### 6. **Performance Optimization**
+- [ ] Minimize re-renders
+- [ ] Optimize Yoga calculations (only recalc dirty nodes)
+- [ ] Widget pooling/reuse
+- [ ] Benchmark against Ink
+
+#### 7. **Developer Experience**
+- [ ] Better error messages
+- [ ] Debug mode improvements
+- [ ] DevTools integration?
+- [ ] Hot reload support
+
+#### 8. **Advanced Features**
+- [ ] Animation support
+- [ ] Context-based theming
+- [ ] Suspense support
+- [ ] Portal support
+- [ ] Custom renderers
 
 ---
 
-**Last Updated**: 2025-10-28
-**Status**: Planning phase
-**Next Milestone**: Phase 1 complete
+**Last Updated**: 2025-11-01
+**Status**: MVP functionally complete, needs testing and hooks
+**Next Milestone**: Testing + Hooks complete → v1.0.0 release candidate
