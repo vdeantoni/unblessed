@@ -26,6 +26,7 @@ import {
   type TextNode,
   updateNodeProps,
 } from "./dom.js";
+import type { EventHandlers } from "./types.js";
 
 type Props = Record<string, unknown>;
 
@@ -189,13 +190,20 @@ function propsToWidgetOptions(props: Props): any {
   if (props.color || props.backgroundColor) {
     widgetOptions.style = widgetOptions.style || {};
 
-    // Set text colors (will be filtered out for Box widgets in widget-sync)
     if (props.color) {
       widgetOptions.style.fg = colors.convert(props.color as string);
     }
     if (props.backgroundColor) {
       widgetOptions.style.bg = colors.convert(props.backgroundColor as string);
     }
+
+    // Text attributes
+    if (props.bold) widgetOptions.style.bold = true;
+    if (props.italic) widgetOptions.style.italic = true;
+    if (props.underline) widgetOptions.style.underline = true;
+    if (props.strikethrough) widgetOptions.style.strikethrough = true;
+    if (props.inverse) widgetOptions.style.inverse = true;
+    if (props.dim) widgetOptions.style.dim = true;
   }
 
   if (props.hoverBg) {
@@ -226,8 +234,40 @@ function propsToWidgetOptions(props: Props): any {
   if (props.autoFocus !== undefined) {
     widgetOptions.autoFocus = props.autoFocus;
   }
+  if (props.tabIndex !== undefined) {
+    widgetOptions.tabIndex = props.tabIndex;
+  }
 
   return widgetOptions;
+}
+
+/**
+ * Converts React event props (onClick, onFocus, etc.) to unblessed event handlers
+ */
+function propsToEventHandlers(props: Props): EventHandlers {
+  const handlers: EventHandlers = {};
+
+  if (props.onClick) handlers.click = props.onClick as any;
+  if (props.onMouseDown) handlers.mousedown = props.onMouseDown as any;
+  if (props.onMouseUp) handlers.mouseup = props.onMouseUp as any;
+  if (props.onMouseMove) handlers.mousemove = props.onMouseMove as any;
+  if (props.onMouseOver) handlers.mouseover = props.onMouseOver as any;
+  if (props.onMouseOut) handlers.mouseout = props.onMouseOut as any;
+  if (props.onMouseWheel) handlers.mousewheel = props.onMouseWheel as any;
+  if (props.onWheelDown) handlers.wheeldown = props.onWheelDown as any;
+  if (props.onWheelUp) handlers.wheelup = props.onWheelUp as any;
+
+  if (props.onKeyPress) handlers.keypress = props.onKeyPress as any;
+
+  if (props.onFocus) handlers.focus = props.onFocus as any;
+  if (props.onBlur) handlers.blur = props.onBlur as any;
+
+  if (props.onPress) handlers.press = props.onPress as any;
+  if (props.onSubmit) handlers.submit = props.onSubmit as any;
+  if (props.onCancel) handlers.cancel = props.onCancel as any;
+  if (props.onAction) handlers.action = props.onAction as any;
+
+  return handlers;
 }
 
 const reconciler = createReconciler<
@@ -262,19 +302,19 @@ const reconciler = createReconciler<
   createInstance(type, props) {
     const manager = getLayoutManager();
 
-    // Create layout node via LayoutManager
     const flexboxProps = propsToFlexbox(props);
     const widgetOptions = propsToWidgetOptions(props);
-    const layoutNode = manager.createNode(type, flexboxProps, widgetOptions);
+    const eventHandlers = propsToEventHandlers(props);
 
-    // Wrap in DOM node
+    const layoutNode = manager.createNode(type, flexboxProps, widgetOptions);
+    layoutNode.eventHandlers = eventHandlers;
+
     return createElement(type, layoutNode, props);
   },
 
   createTextInstance(text) {
     const manager = getLayoutManager();
 
-    // Create layout node for text
     const layoutNode = manager.createNode(
       "#text",
       { height: 1, width: text.length },
@@ -349,28 +389,36 @@ const reconciler = createReconciler<
   },
 
   // Updates
+  prepareUpdate(_instance, _type, _oldProps, _newProps) {
+    // Return non-null to indicate update is needed
+    // The actual update happens in commitUpdate
+    return true;
+  },
+
   commitUpdate(instance, _updatePayload, _type, _oldProps, newProps) {
-    // Update DOM node props
     updateNodeProps(instance, newProps);
 
-    // Update layout node
     const flexboxProps = propsToFlexbox(newProps);
     const widgetOptions = propsToWidgetOptions(newProps);
+    const eventHandlers = propsToEventHandlers(newProps);
 
     updateLayoutNode(instance.layoutNode, flexboxProps);
     instance.layoutNode.widgetOptions = widgetOptions;
+    instance.layoutNode.eventHandlers = eventHandlers;
   },
 
   commitTextUpdate(textInstance, _oldText, newText) {
     textInstance.nodeValue = newText;
     textInstance.layoutNode.widgetOptions = { content: newText };
+
+    // Update Yoga width when text length changes
+    textInstance.layoutNode.yogaNode.setWidth(newText.length);
+    textInstance.layoutNode.props.width = newText.length;
   },
 
   // Commit hooks
   prepareForCommit: () => null,
   resetAfterCommit(rootNode) {
-    // Trigger layout calculation and rendering
-    // This is called after React commits all changes
     if (rootNode.onComputeLayout) {
       rootNode.onComputeLayout();
     }

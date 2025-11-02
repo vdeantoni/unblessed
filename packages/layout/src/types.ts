@@ -257,6 +257,16 @@ export interface LayoutNode {
    * Additional unblessed widget options (non-layout props).
    */
   widgetOptions?: any;
+
+  /**
+   * Event handlers to bind to the widget (from React props like onClick, onFocus).
+   */
+  eventHandlers?: Record<string, Function>;
+
+  /**
+   * Currently bound event handlers (used for cleanup on update).
+   */
+  _boundHandlers?: Record<string, Function>;
 }
 
 /**

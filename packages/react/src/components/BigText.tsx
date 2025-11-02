@@ -3,29 +3,39 @@
  */
 
 import { forwardRef, type PropsWithChildren } from "react";
+import type { BoxProps } from "./Box.js";
 
 /**
  * Props for BigText component
  */
-export interface BigTextProps {
-  /**
-   * Text content
-   */
+export interface BigTextProps extends BoxProps {
   children?: string;
-
-  /**
-   * Text color
-   */
-  color?: string;
-
-  /**
-   * Background color
-   */
-  backgroundColor?: string;
 }
 
 /**
- * BigText component
+ * BigText component - Renders large ASCII art text
+ *
+ * Uses terminal fonts to render large text. Each character is 14 rows × 8 columns.
+ * Supports all BoxProps including flexbox layout, borders, and event handling.
+ *
+ * @example
+ * ```tsx
+ * <BigText color="cyan">
+ *   HELLO
+ * </BigText>
+ * ```
+ *
+ * @example With border and events
+ * ```tsx
+ * <BigText
+ *   color="green"
+ *   borderStyle="single"
+ *   padding={1}
+ *   onClick={() => console.log('Big text clicked!')}
+ * >
+ *   WELCOME
+ * </BigText>
+ * ```
  */
 export const BigText = forwardRef<any, PropsWithChildren<BigTextProps>>(
   ({ children, ...props }, ref) => {

@@ -29,8 +29,15 @@
 
 export { BigText, type BigTextProps } from "./components/BigText.js";
 export { Box, type BoxProps } from "./components/Box.js";
+export { Button, type ButtonProps } from "./components/Button.js";
+export { Input, type InputProps } from "./components/Input.js";
 export { Spacer } from "./components/Spacer.js";
 export { Text, type TextProps } from "./components/Text.js";
 export { render } from "./render.js";
 
-export type { RenderInstance, RenderOptions } from "./types.js";
+export type {
+  EventHandlers,
+  ReactEventProps,
+  RenderInstance,
+  RenderOptions,
+} from "./types.js";

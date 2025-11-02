@@ -996,23 +996,31 @@ render(<App />);
 - [x] ✅ Example app (hello-react.tsx)
   - Comprehensive example with all features
   - Border showcase, buttons, inputs
-- [x] ✅ Documentation (README.md)
+- [x] ✅ Documentation (README.md, CLAUDE.md)
   - Installation guide
   - Component API reference
   - Architecture explanation
+  - Event handling documentation
   - Examples
-- [ ] ⚠️ Unit tests (MINIMAL)
-  - 4 basic tests in render.test.tsx
-  - Need comprehensive component tests
+- [x] ✅ Event handling system
+  - React event props (onClick, onKeyPress, etc.)
+  - Event binding/unbinding in widget-sync
+  - Event cleanup on update/unmount
+  - Text content concatenation fix (multiple #text children)
+  - 6 event tests + 2 content update tests passing
+- [ ] ⚠️ Unit tests (PARTIAL)
+  - 12 tests total (4 render + 6 event + 2 content update)
+  - Need more component tests (layout, props, edge cases)
 - [ ] ⚠️ Integration tests (NEEDED)
   - Layout calculations
   - State updates
-  - Event handling
+  - Complex event scenarios
 - [ ] ⚠️ Test coverage target (NEEDED)
   - Goal: 70%+ coverage
+  - Current: ~30% (estimated)
 
 ### Phase 6: Future Enhancements 📋 **PLANNED**
-- [ ] Hooks (useInput, useApp, useFocus)
+- [ ] Hooks (useInput, useApp, useFocus) - **NEXT PRIORITY**
 - [ ] Text wrapping and overflow handling
 - [ ] More widget wrappers (List, ListTable, ProgressBar, etc.)
 - [ ] Performance optimization
@@ -1054,26 +1062,35 @@ render(<App />);
 ### Immediate Priorities (Next 1-2 weeks)
 
 #### 1. **Testing** 🎯 **HIGH PRIORITY**
-The React package is functionally complete but severely under-tested:
+The React package has event handling and content updates working:
 
-**Current:** 4 basic tests
+**Current:** 12 tests (4 render + 6 event + 2 content update)
 **Goal:** 70%+ coverage
 
 **Tasks:**
+- [x] ✅ Event handling tests (6 tests)
+- [x] ✅ Content update tests (2 tests)
 - [ ] Component tests (Box, Text, BigText, Button, Input, Spacer)
 - [ ] Layout calculation tests (flexbox, gap, padding, borders)
 - [ ] Props conversion tests (flexbox props → Yoga, widget props → options)
-- [ ] Update/re-render tests (state changes, prop updates)
 - [ ] Focus navigation tests (Button, Input interactions)
 - [ ] Border color tests (per-side colors, dim, conversion)
 
 **Location:** `packages/react/__tests__/`
 
-#### 2. **Event Handling Hooks** 🎯 **HIGH PRIORITY**
-React components need interactive capabilities:
+#### 2. **Hooks** 🎯 **HIGH PRIORITY** ✅ **Foundation Complete**
+Event system foundation is complete. Now implement hooks for global event handling:
+
+**Foundation complete:**
+- [x] ✅ Event prop types (ReactEventProps, EventHandlers)
+- [x] ✅ Props extraction (propsToEventHandlers in reconciler)
+- [x] ✅ Event binding/unbinding (widget-sync.ts)
+- [x] ✅ Event cleanup on update/unmount
+- [x] ✅ Component support (Box, Button, Input)
+- [x] ✅ Tests (6 event tests passing)
 
 **Hooks to implement:**
-- [ ] `useInput(handler)` - Keyboard input handling
+- [ ] `useInput(handler)` - Keyboard input handling (screen-level)
 - [ ] `useApp()` - App lifecycle (exit, etc.)
 - [ ] `useFocus()` - Focus management for Tab navigation
 
@@ -1082,11 +1099,6 @@ React components need interactive capabilities:
 **Location:** `packages/react/src/hooks/`
 
 #### 3. **Text Wrapping** 🔧 **MEDIUM PRIORITY**
-Currently text doesn't wrap/truncate:
-
-**Tasks:**
-- [ ] Port Ink's wrap-text.ts
-- [ ] Add Yoga measure function for text nodes
 - [ ] Support wrap modes (wrap, truncate, truncate-middle, etc.)
 - [ ] Handle ANSI codes correctly
 
@@ -1137,5 +1149,5 @@ Wrap existing unblessed widgets as React components:
 ---
 
 **Last Updated**: 2025-11-01
-**Status**: MVP functionally complete, needs testing and hooks
-**Next Milestone**: Testing + Hooks complete → v1.0.0 release candidate
+**Status**: MVP functionally complete with event handling
+**Next Milestone**: Hooks + comprehensive tests → v1.0.0 release candidate

@@ -8,7 +8,7 @@ This document provides architectural context and development guidelines for the 
 
 **Purpose:** Provide a modern, declarative API for building terminal UIs with React
 
-**Status:** 🚧 **Alpha/Work in Progress** - Core functionality working, some features incomplete
+**Status:** 🚀 **Alpha** - Core functionality complete, event handling implemented
 
 ## What This Package Does
 
@@ -16,22 +16,31 @@ Enables writing terminal UIs like this:
 
 ```tsx
 import { Screen } from "@unblessed/node";
-import { render, Box, Text, Spacer } from "@unblessed/react";
+import { render, Box, Text, Button } from "@unblessed/react";
 
 const screen = new Screen();
 
-render(
-  <Box flexDirection="row" gap={2}>
-    <Box width={20} borderStyle="single" borderColor="cyan">
-      <Text>Left</Text>
+const App = () => {
+  const [count, setCount] = React.useState(0);
+
+  return (
+    <Box flexDirection="column" gap={2}>
+      <Box borderStyle="single" borderColor="cyan" padding={1}>
+        <Text>Count: {count}</Text>
+      </Box>
+      <Button
+        borderStyle="single"
+        borderColor="green"
+        padding={1}
+        onClick={() => setCount(c => c + 1)}
+      >
+        Click me!
+      </Button>
     </Box>
-    <Spacer />
-    <Box width={20} borderStyle="single" borderColor="green">
-      <Text>Right</Text>
-    </Box>
-  </Box>,
-  { screen },
-);
+  );
+};
+
+render(<App />, { screen });
 ```
 
 Instead of imperative blessed-style code.
@@ -72,9 +81,134 @@ Terminal rendering
 
 **4. Components**
 
-- Box.tsx - Container with flexbox props
+- Box.tsx - Container with flexbox props and event handlers
 - Text.tsx - Text with styling
 - Spacer.tsx - flexGrow={1} shorthand
+- Button.tsx - Interactive button with hover/focus effects
+- Input.tsx - Text input with submit/cancel events
+- BigText.tsx - Large ASCII art text
+
+## Event Handling
+
+### Overview
+
+All React components support event handling through React-style props (onClick, onFocus, etc.) that are automatically bound to unblessed widget events.
+
+### Supported Events
+
+**Mouse Events:**
+- `onClick` → `click`
+- `onMouseDown` → `mousedown`
+- `onMouseUp` → `mouseup`
+- `onMouseMove` → `mousemove`
+- `onMouseOver` → `mouseover`
+- `onMouseOut` → `mouseout`
+- `onMouseWheel` → `mousewheel`
+
+**Keyboard Events:**
+- `onKeyPress` → `keypress`
+
+**Focus Events:**
+- `onFocus` → `focus`
+- `onBlur` → `blur`
+
+**Widget-Specific Events:**
+- `onPress` → `press` (Button)
+- `onSubmit` → `submit` (Input/Textarea)
+- `onCancel` → `cancel` (Input/Textarea)
+
+### Implementation
+
+**1. Props Extraction (reconciler.ts)**
+
+Event props are extracted and converted to unblessed event names:
+
+```typescript
+function propsToEventHandlers(props: Props): EventHandlers {
+  const handlers: EventHandlers = {};
+  if (props.onClick) handlers.click = props.onClick;
+  if (props.onKeyPress) handlers.keypress = props.onKeyPress;
+  // ... etc
+  return handlers;
+}
+```
+
+**2. Event Storage (LayoutNode)**
+
+Handlers are stored on the LayoutNode:
+
+```typescript
+interface LayoutNode {
+  eventHandlers?: Record<string, Function>;
+  _boundHandlers?: Record<string, Function>; // For cleanup
+  // ...
+}
+```
+
+**3. Binding (widget-sync.ts)**
+
+Events are bound when widgets are created/updated:
+
+```typescript
+function bindEventHandlers(widget: Element, handlers: Record<string, Function>) {
+  for (const [event, handler] of Object.entries(handlers)) {
+    widget.on(event, handler);
+  }
+}
+```
+
+**4. Cleanup**
+
+Old handlers are unbound before binding new ones:
+
+```typescript
+function unbindEventHandlers(widget: Element, handlers: Record<string, Function>) {
+  for (const [event, handler] of Object.entries(handlers)) {
+    widget.removeListener(event, handler);
+  }
+}
+```
+
+### Usage Examples
+
+**Click Handler:**
+```tsx
+<Box onClick={(data) => console.log('Clicked at', data.x, data.y)}>
+  Click me
+</Box>
+```
+
+**Keyboard Handler:**
+```tsx
+<Box onKeyPress={(ch, key) => {
+  if (key.name === 'enter') handleSubmit();
+}}>
+  Press Enter
+</Box>
+```
+
+**Button Component:**
+```tsx
+<Button onPress={() => console.log('Pressed!')}>
+  Submit
+</Button>
+```
+
+**Input Component:**
+```tsx
+<Input
+  onSubmit={(value) => console.log('Submitted:', value)}
+  onCancel={() => console.log('Cancelled')}
+/>
+```
+
+### JSX Element Names
+
+To avoid conflicts with HTML elements, custom element names are used:
+- `<tbutton>` - Button (avoids HTML `<button>`)
+- `<textinput>` - Input (avoids HTML `<input>`)
+
+Components (`<Button>`, `<Input>`) internally use these custom elements.
 
 ## Critical Learnings
 
@@ -165,23 +299,51 @@ if (!isTextWidget && widgetOpts.style) {
 
 Box widgets should only have border colors in `style.border.*`, not text colors in `style.*`.
 
+### Text Content Concatenation
+
+**Problem:** `<Text>X: {value}</Text>` creates multiple #text children, and calling `setContent()` for each one overwrites previous content.
+
+**Solution:** Collect all #text children, concatenate their content, then call `setContent()` once:
+
+```typescript
+// In syncWidgetWithYoga(), after syncing all children:
+if (node.children.length > 0) {
+  const allTextNodes = node.children.every(c => c.type === "#text");
+
+  if (allTextNodes) {
+    const fullContent = node.children
+      .map(c => c.widgetOptions?.content || "")
+      .join("");
+
+    node.widget.setContent(fullContent);
+  }
+}
+```
+
+This ensures "X: " + "42" → "X: 42" instead of just "42".
+
 ## Package Structure
 
 ```
 packages/react/
 ├── src/
 │   ├── index.ts              # Main exports
-│   ├── types.ts              # TypeScript definitions
+│   ├── types.ts              # TypeScript definitions (including EventHandlers)
+│   ├── jsx.d.ts              # JSX element declarations
 │   ├── dom.ts                # Virtual DOM (wraps LayoutNode)
-│   ├── reconciler.ts         # React reconciler config
+│   ├── reconciler.ts         # React reconciler config + event extraction
 │   ├── render.ts             # render() function
 │   └── components/
 │       ├── Box.tsx           # Box component
 │       ├── Text.tsx          # Text component
-│       └── Spacer.tsx        # Spacer component
+│       ├── Spacer.tsx        # Spacer component
+│       ├── Button.tsx        # Button component (with events)
+│       ├── Input.tsx         # Input component (with events)
+│       └── BigText.tsx       # BigText component
 ├── __tests__/
 │   ├── setup.ts              # Test setup
-│   └── render.test.tsx       # Basic rendering tests
+│   ├── render.test.tsx       # Basic rendering tests (4 tests)
+│   └── events.test.tsx       # Event handling tests (6 tests)
 ├── examples/
 │   └── hello-react.tsx       # Example app
 ├── package.json
@@ -239,37 +401,46 @@ packages/react/
 **✅ Working:**
 
 - React reconciler integration
-- Box, Text, Spacer components
+- Box, Text, Spacer, BigText, Button, Input components
 - Flexbox layout (flexGrow, justifyContent, gap, etc.)
-- Border styles and colors
-- Absolute positioning
-- 4 basic tests passing
-
-**🚧 Known Issues:**
-
-- Padding positioning (visual spacing correct but may have edge cases)
-- Text content rendering (basic working, needs refinement)
-- Event handling not implemented (no useInput, useApp hooks yet)
-- No comprehensive test coverage
+- Border styles and colors (per-side support)
+- Absolute positioning from Yoga
+- **Event handling (onClick, onKeyPress, onSubmit, etc.)**
+- **Event cleanup on update/unmount**
+- **Handler rebinding on prop changes**
+- **Content updates on state changes (text concatenation)**
+- 12 tests passing (4 render + 6 event + 2 content update tests)
 
 **📋 TODO:**
 
-- Remove debug logging
-- Fix remaining padding edge cases
-- Add useInput hook for keyboard
-- Add useApp hook for lifecycle
-- Comprehensive tests
 - Text wrapping support
-- More component wrappers (List, Button, etc.)
+- Yoga measure function for text
+- Hooks (useInput, useApp, useFocus)
+- More component wrappers (List, ListTable, ProgressBar, Checkbox, RadioButton, etc.)
+- Comprehensive integration tests
+- Performance optimization
 
 ## Testing
 
-**Current tests (4):**
+**Current tests (10):**
 
+**Render tests (4):**
 - Basic rendering without crashing
 - Box component rendering
 - Flexbox layout with flexGrow
 - Spacer component
+
+**Event tests (6):**
+- onClick handler binding
+- onKeyPress handler binding
+- onPress handler binding (Button)
+- onSubmit handler binding (Input)
+- Handler updates (rebinding on prop change)
+- Cleanup on unmount
+
+**Content update tests (2):**
+- Text content updates on state changes
+- Multiple text widgets update independently
 
 **To run:**
 
@@ -280,7 +451,9 @@ pnpm --filter @unblessed/react test
 **Example to run:**
 
 ```bash
-tsx packages/react/examples/hello-react.tsx
+cd packages/react/examples
+node --import tsx --no-warnings interactive-demo.tsx
+node --import tsx --no-warnings keyboard-game.tsx
 ```
 
 ## Development Tips
@@ -327,29 +500,36 @@ When adding border support, remember:
 
 ## Future Work
 
+### Phase 1: Hooks ⚠️ **Next Priority**
+
+- useInput hook for keyboard
+- useApp hook for lifecycle
+- useFocus hook for Tab navigation
+
 ### Phase 2: Text Rendering
 
 - Implement text wrapping
 - Add Yoga measure function for text
 - Support multi-line text
 
-### Phase 3: Event Handling
-
-- useInput hook for keyboard
-- useApp hook for lifecycle
-- useFocus hook for Tab navigation
-
-### Phase 4: More Components
+### Phase 3: More Components
 
 - List component wrapper
-- Button component wrapper
-- Form components
-- ProgressBar, etc.
+- ListTable component wrapper
+- ProgressBar component
+- Checkbox component
+- RadioButton/RadioSet components
+- Form component
+- FileManager component
 
 ## Summary
 
 **@unblessed/react** brings React's declarative component model to terminal UIs. It integrates React's reconciler with @unblessed/layout's Yoga engine and unblessed's rendering capabilities.
 
-**Key insight:** The reconciler's job is to manage LayoutNodes, not widgets directly. LayoutManager handles the Yoga calculations and widget synchronization.
+**Key insights:**
+- The reconciler manages LayoutNodes, not widgets directly
+- LayoutManager handles Yoga calculations and widget synchronization
+- Event props are extracted and bound to unblessed EventEmitter
+- Custom JSX elements avoid conflicts with HTML elements
 
-**Status:** Core functionality proven, ready for feature expansion.
+**Status:** Core functionality complete with event handling. Ready for hooks and additional components.

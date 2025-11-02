@@ -17,6 +17,7 @@ React renderer for unblessed with flexbox layout support.
 - 📦 **Flexbox layout** - Automatic positioning via Yoga layout engine
 - 🎯 **TypeScript first** - Full type safety
 - 🌐 **Platform-agnostic** - Works in Node.js and browsers
+- 🖱️ **Event handling** - onClick, onKeyPress, onSubmit, and more
 
 ## Installation
 
@@ -172,9 +173,11 @@ Interactive button component with hover and focus effects.
 
 **Props:**
 
-- All Box props (flexbox, border, etc.)
+- All Box props (flexbox, border, colors, events, etc.)
 - `hoverBg` - Background color on hover
 - `focusBg` - Border color when focused
+- `onClick` - Click handler
+- `onPress` - Press handler (Enter key or click)
 
 ### Input
 
@@ -191,8 +194,11 @@ Text input component for user interaction.
 
 **Props:**
 
-- All Box props (flexbox, border, etc.)
+- All Box props (flexbox, border, colors, events, etc.)
 - `autoFocus` - Automatically focus on mount
+- `onSubmit` - Submit handler (Enter key)
+- `onCancel` - Cancel handler (Escape key)
+- `onKeyPress` - Key press handler
 
 ## Examples
 
@@ -262,6 +268,122 @@ const LoginForm = () => (
 );
 ```
 
+## Event Handling
+
+All components support React-style event handlers that are automatically bound to unblessed widget events.
+
+### Mouse Events
+
+```tsx
+<Box
+  onClick={(data) => {
+    console.log(`Clicked at ${data.x}, ${data.y}`);
+  }}
+  onMouseMove={(data) => {
+    console.log(`Mouse moved to ${data.x}, ${data.y}`);
+  }}
+>
+  Interactive Box
+</Box>
+```
+
+**Available:**
+- `onClick`, `onMouseDown`, `onMouseUp`
+- `onMouseMove`, `onMouseOver`, `onMouseOut`
+- `onMouseWheel`, `onWheelDown`, `onWheelUp`
+
+### Keyboard Events
+
+```tsx
+<Box
+  onKeyPress={(ch, key) => {
+    if (key.name === 'enter') {
+      console.log('Enter pressed!');
+    }
+    if (key.ctrl && key.name === 'c') {
+      process.exit(0);
+    }
+  }}
+>
+  Press keys
+</Box>
+```
+
+### Focus Events
+
+```tsx
+<Button
+  onFocus={() => console.log('Button focused')}
+  onBlur={() => console.log('Button blurred')}
+>
+  Focus me
+</Button>
+```
+
+### Widget-Specific Events
+
+**Button:**
+```tsx
+<Button onPress={() => console.log('Button pressed!')}>
+  Submit
+</Button>
+```
+
+**Input:**
+```tsx
+<Input
+  onSubmit={(value) => console.log('Submitted:', value)}
+  onCancel={() => console.log('Cancelled')}
+  onKeyPress={(ch, key) => console.log('Key:', key.name)}
+/>
+```
+
+### Interactive Example
+
+```tsx
+import React, { useState } from "react";
+import { render, Box, Text, Button, Input } from "@unblessed/react";
+
+const Counter = () => {
+  const [count, setCount] = useState(0);
+  const [name, setName] = useState("");
+
+  return (
+    <Box flexDirection="column" gap={1} padding={2}>
+      <Box borderStyle="single" padding={1}>
+        <Text>Count: {count}</Text>
+      </Box>
+
+      <Button
+        borderStyle="single"
+        borderColor="green"
+        padding={1}
+        onClick={() => setCount(c => c + 1)}
+        onPress={() => setCount(c => c + 1)}
+      >
+        Increment
+      </Button>
+
+      <Input
+        borderColor="blue"
+        onSubmit={(value) => {
+          setName(value);
+          console.log("Name set to:", value);
+        }}
+      />
+
+      {name && (
+        <Box padding={1}>
+          <Text>Hello, {name}!</Text>
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+render(<Counter />);
+```
+
 ## Architecture
 
 @unblessed/react builds on top of:
@@ -308,6 +430,7 @@ interface LayoutNode {
   props: FlexboxProps;      // width, height, padding, gap, etc.
   widgetOptions: any;       // border, colors, content, etc.
   widget?: Element;         // The final unblessed widget
+  eventHandlers?: Record<string, Function>;  // Event handlers to bind
 }
 ```
 
@@ -343,7 +466,7 @@ new Box({
 When you write:
 
 ```tsx
-<Box padding={1} gap={2} borderColor="cyan">
+<Box padding={1} gap={2} borderColor="cyan" onClick={handleClick}>
   <Text>Hello</Text>
 </Box>
 ```
@@ -352,7 +475,7 @@ Here's what happens:
 
 ```
 1. React Component
-   <Box padding={1} gap={2} borderColor="cyan">
+   <Box padding={1} gap={2} borderColor="cyan" onClick={handleClick}>
       ↓
 2. React Reconciler creates DOMNode
    DOMNode { type: 'box', props: {...}, layoutNode: LayoutNode }
@@ -361,6 +484,7 @@ Here's what happens:
    LayoutNode {
      props: { padding: 1, gap: 2 },        → Sent to YogaNode
      widgetOptions: { borderColor: 'cyan' } → Saved for widget
+     eventHandlers: { click: handleClick } → Saved for widget
      yogaNode: YogaNode
    }
       ↓
@@ -368,11 +492,12 @@ Here's what happens:
    YogaNode.calculateLayout()
    Result: { top: 0, left: 0, width: 100, height: 50 }
       ↓
-5. Widget created/updated with positions
+5. Widget created/updated with positions and events
    Box {
      top: 0, left: 0, width: 100, height: 50,
      border: { type: 'line', fg: 6 }  // cyan converted to color code
    }
+   box.on('click', handleClick)  // Event bound
       ↓
 6. Rendered to terminal
 ```
@@ -384,7 +509,7 @@ Each layer has a specific responsibility:
 | Layer | Responsibility |
 |-------|---------------|
 | **DOMNode** | React reconciler - manages virtual DOM tree |
-| **LayoutNode** | Bridge between React props and layout engine |
+| **LayoutNode** | Bridge between React props, layout engine, and events |
 | **YogaNode** | Pure flexbox calculations (no UI concerns) |
 | **Widget** | Terminal rendering (no layout concerns) |
 
@@ -406,12 +531,16 @@ This separation allows:
 - Flexbox properties (gap, padding, margin, alignment, etc.)
 - Color conversion (string colors → terminal color codes)
 - Focus effects (hover, focus states)
+- **Event handling (onClick, onKeyPress, onSubmit, etc.)**
+- **Event cleanup on update/unmount**
+- **Content updates on state changes**
+- **12 tests passing (4 render + 6 event + 2 content update tests)**
 
 **🚧 In Progress:**
 
-- Event handling hooks (useInput, useApp, useFocus)
+- Hooks (useInput, useApp, useFocus)
 - Text wrapping and overflow handling
-- Full test coverage
+- Comprehensive integration tests
 - Performance optimization
 
 **📋 Planned:**

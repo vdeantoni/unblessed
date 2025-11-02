@@ -15,9 +15,31 @@ import Yoga from "yoga-layout";
 import type { ComputedLayout, LayoutNode } from "./types.js";
 
 /**
+ * Binds event handlers to a widget.
+ */
+function bindEventHandlers(
+  widget: Element,
+  handlers: Record<string, Function>,
+): void {
+  for (const [event, handler] of Object.entries(handlers)) {
+    widget.on(event, handler as any);
+  }
+}
+
+/**
+ * Unbinds event handlers from a widget.
+ */
+function unbindEventHandlers(
+  widget: Element,
+  handlers: Record<string, Function>,
+): void {
+  for (const [event, handler] of Object.entries(handlers)) {
+    widget.removeListener(event, handler as any);
+  }
+}
+
+/**
  * Extracts computed layout from a Yoga node.
- * @param node - Layout node with computed Yoga layout
- * @returns Computed layout coordinates
  */
 export function getComputedLayout(node: LayoutNode): ComputedLayout {
   return {
@@ -30,14 +52,7 @@ export function getComputedLayout(node: LayoutNode): ComputedLayout {
 
 /**
  * Synchronizes a layout node tree to unblessed widgets.
- * This is where Yoga's calculated positions get applied to widgets.
- *
- * KEY PRINCIPLE: Yoga is ALWAYS the source of truth.
- * Widget positions are OVERWRITTEN every time this is called.
- *
- * @param node - Root layout node (with computed layout)
- * @param screen - Screen to attach widgets to
- * @returns The created/updated unblessed widget
+ * Yoga positions are applied to widgets. Widgets are created/updated as needed.
  */
 export function syncWidgetWithYoga(node: LayoutNode, screen: Screen): Element {
   // Extract Yoga's computed layout
@@ -47,7 +62,6 @@ export function syncWidgetWithYoga(node: LayoutNode, screen: Screen): Element {
   let left = layout.left;
 
   if (node.parent) {
-    // Get parent's border from Yoga
     const parentBorderTop = node.parent.yogaNode.getComputedBorder(
       Yoga.EDGE_TOP,
     );
@@ -55,20 +69,20 @@ export function syncWidgetWithYoga(node: LayoutNode, screen: Screen): Element {
       Yoga.EDGE_LEFT,
     );
 
-    // yoga and unblessed treat border differently, unblessed collapse border
+    // Adjust for border collapse difference between Yoga and unblessed
     top = layout.top - parentBorderTop;
     left = layout.left - parentBorderLeft;
   }
 
-  // Text nodes are handled differently, we get is children/content and set it as content of the parent.
+  // Text nodes return hidden elements; content is set on parent after syncing children
   if (node.type === "#text") {
-    if (node.parent?.widget) {
-      node.parent.widget.setContent(node.widgetOptions?.content);
-      return new Element({ screen, hidden: true });
+    if (node.widget) {
+      return node.widget;
     }
+    node.widget = new Element({ screen, hidden: true });
+    return node.widget;
   }
 
-  // Create or update widget
   if (!node.widget) {
     // First render - create new widget
     let WidgetClass = Box;
@@ -81,11 +95,13 @@ export function syncWidgetWithYoga(node: LayoutNode, screen: Screen): Element {
         WidgetClass = BigText;
         break;
       }
-      case "button": {
+      case "button":
+      case "tbutton": {
         WidgetClass = Button;
         break;
       }
-      case "input": {
+      case "input":
+      case "textinput": {
         WidgetClass = Textbox;
         break;
       }
@@ -97,34 +113,61 @@ export function syncWidgetWithYoga(node: LayoutNode, screen: Screen): Element {
       mouse: true,
       keys: true,
       inputOnFocus: true,
-      top: top,
-      left: left,
+      top,
+      left,
       width: layout.width,
       height: layout.height,
-      ...node.widgetOptions, // Merge any additional widget options
+      ...node.widgetOptions,
     });
+
+    if (node.eventHandlers && Object.keys(node.eventHandlers).length > 0) {
+      bindEventHandlers(node.widget, node.eventHandlers);
+      node._boundHandlers = node.eventHandlers;
+    }
   } else {
-    // Update existing widget with new layout
-    // IMPORTANT: We OVERWRITE position every render
-    // This ensures Yoga is always source of truth
     node.widget.position.top = top;
     node.widget.position.left = left;
     node.widget.position.width = layout.width;
     node.widget.position.height = layout.height;
 
-    // Update other widget options if changed
     if (node.widgetOptions) {
       Object.assign(node.widget, node.widgetOptions);
     }
+
+    if (node.eventHandlers) {
+      if (node._boundHandlers) {
+        unbindEventHandlers(node.widget, node._boundHandlers);
+      }
+
+      if (Object.keys(node.eventHandlers).length > 0) {
+        bindEventHandlers(node.widget, node.eventHandlers);
+        node._boundHandlers = node.eventHandlers;
+      } else {
+        node._boundHandlers = undefined;
+      }
+    }
   }
 
-  // Recursively sync children
   for (const child of node.children) {
     const childWidget = syncWidgetWithYoga(child, screen);
 
-    // Ensure proper parent-child relationship
     if (childWidget.parent !== node.widget) {
       node.widget.append(childWidget);
+    }
+  }
+
+  // Concatenate all #text children and set as widget content
+  if (node.children.length > 0) {
+    const allTextNodes = node.children.every((c) => c.type === "#text");
+
+    if (allTextNodes) {
+      const fullContent = node.children
+        .map((c) => c.widgetOptions?.content || "")
+        .join("");
+
+      if (fullContent) {
+        node.widget.setContent(fullContent);
+      }
     }
   }
 
@@ -132,36 +175,32 @@ export function syncWidgetWithYoga(node: LayoutNode, screen: Screen): Element {
 }
 
 /**
- * Synchronizes an entire layout tree to widgets and renders.
- * @param rootNode - Root layout node
- * @param screen - Screen to render to
+ * Synchronizes layout tree to widgets and renders to screen.
  */
 export function syncTreeAndRender(rootNode: LayoutNode, screen: Screen): void {
-  // Sync the entire tree
   const rootWidget = syncWidgetWithYoga(rootNode, screen);
 
-  // Ensure root widget is attached to screen
   if (!rootWidget.parent) {
     screen.append(rootWidget);
   }
 
-  // Render the screen
   screen.render();
 }
 
 /**
- * Detaches and destroys all widgets in a layout node tree.
- * Useful for cleanup when unmounting.
- * @param node - Root layout node to clean up
+ * Destroys all widgets in a layout tree and unbinds event handlers.
  */
 export function destroyWidgets(node: LayoutNode): void {
-  // Recursively destroy children first
   for (const child of node.children) {
     destroyWidgets(child);
   }
 
-  // Destroy this node's widget
   if (node.widget) {
+    if (node._boundHandlers) {
+      unbindEventHandlers(node.widget, node._boundHandlers);
+      node._boundHandlers = undefined;
+    }
+
     node.widget.detach();
     node.widget.destroy();
     node.widget = undefined;
