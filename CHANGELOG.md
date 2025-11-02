@@ -1,3 +1,12 @@
+# [1.0.0-alpha.14](https://github.com/vdeantoni/unblessed/compare/v1.0.0-alpha.13...v1.0.0-alpha.14) (2025-11-02)
+
+
+### Features
+
+* **react:** BigText component ([9f97be5](https://github.com/vdeantoni/unblessed/commit/9f97be5b18848ea07d821e0d8657409d052df81f))
+* **react:** Button and Input ([df53b6f](https://github.com/vdeantoni/unblessed/commit/df53b6fad3b6ddeca2b3daca8d2a58a7efc57561))
+* **react:** implement complete event handling system ([9b6f40f](https://github.com/vdeantoni/unblessed/commit/9b6f40fb6e09d490ca70104149514eeb81bfaa26))
+
 # [1.0.0-alpha.13](https://github.com/vdeantoni/unblessed/compare/v1.0.0-alpha.12...v1.0.0-alpha.13) (2025-11-01)
 
 
