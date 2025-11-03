@@ -4,9 +4,11 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": [
-        "lib/**/*.ts",
-        "bin/**/*.ts",
-        "src/**/*.ts",
+        "src/**/*.{ts,tsx}",
+        "lib/**/*.{ts,tsx}",
+        "bin/**/*.{ts,tsx}",
+        "data/**",
+        "templates/**",
         "docs/**",
         "blog/**",
         "static/**",
@@ -38,11 +40,12 @@
     "test": {
       "dependsOn": ["build"],
       "inputs": [
-        "lib/**/*.ts",
-        "lib/**/*.js",
-        "__tests__/**/*.js",
-        "__tests__/**/*.ts",
-        "__tests__/**/*.html",
+        "src/**/*.{ts,tsx}",
+        "lib/**/*.{ts,tsx,js}",
+        "bin/**/*.{ts,tsx}",
+        "data/**",
+        "templates/**",
+        "__tests__/**/*.{ts,tsx,js,html}",
         "vitest.config.ts"
       ],
       "outputs": ["coverage/**"],
@@ -63,11 +66,12 @@
     "test:coverage": {
       "dependsOn": ["build"],
       "inputs": [
-        "lib/**/*.ts",
-        "lib/**/*.js",
-        "__tests__/**/*.js",
-        "__tests__/**/*.ts",
-        "__tests__/**/*.html",
+        "src/**/*.{ts,tsx}",
+        "lib/**/*.{ts,tsx}",
+        "bin/**/*.{ts,tsx}",
+        "data/**",
+        "templates/**",
+        "__tests__/**/*.{ts,tsx,js,html}",
         "vitest.config.ts"
       ],
       "outputs": ["coverage/**"],
@@ -82,11 +86,12 @@
     },
     "lint": {
       "inputs": [
-        "lib/**/*.ts",
-        "lib/**/*.js",
-        "bin/**/*.ts",
-        "__tests__/**/*.js",
-        "__tests__/**/*.ts",
+        "src/**/*.{ts,tsx}",
+        "lib/**/*.{ts,tsx}",
+        "bin/**/*.{ts,tsx}",
+        "data/**",
+        "templates/**",
+        "__tests__/**/*.{ts,tsx,js}",
         "eslint.config.js",
         ".eslintignore"
       ],
@@ -94,11 +99,12 @@
     },
     "lint:check": {
       "inputs": [
-        "lib/**/*.ts",
-        "lib/**/*.js",
-        "bin/**/*.ts",
-        "__tests__/**/*.js",
-        "__tests__/**/*.ts",
+        "src/**/*.{ts,tsx}",
+        "lib/**/*.{ts,tsx}",
+        "bin/**/*.{ts,tsx}",
+        "data/**",
+        "templates/**",
+        "__tests__/**/*.{ts,tsx,js}",
         "eslint.config.js",
         ".eslintignore"
       ],
@@ -106,12 +112,13 @@
     },
     "format": {
       "inputs": [
-        "lib/**/*.ts",
-        "lib/**/*.js",
-        "bin/**/*.ts",
+        "src/**/*.{ts,tsx}",
+        "lib/**/*.{ts,tsx}",
+        "bin/**/*.{ts,tsx}",
+        "data/**",
+        "templates/**",
         "generated/**/*.md",
-        "__tests__/**/*.js",
-        "__tests__/**/*.ts",
+        "__tests__/**/*.{ts,tsx,js}",
         ".prettierrc",
         ".prettierignore"
       ],
@@ -119,12 +126,13 @@
     },
     "format:check": {
       "inputs": [
-        "lib/**/*.ts",
-        "lib/**/*.js",
-        "bin/**/*.ts",
+        "src/**/*.{ts,tsx}",
+        "lib/**/*.{ts,tsx}",
+        "bin/**/*.{ts,tsx}",
+        "data/**",
+        "templates/**",
         "generated/**/*.md",
-        "__tests__/**/*.js",
-        "__tests__/**/*.ts",
+        "__tests__/**/*.{ts,tsx,js}",
         ".prettierrc",
         ".prettierignore"
       ],
