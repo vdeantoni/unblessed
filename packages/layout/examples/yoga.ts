@@ -1,11 +1,6 @@
 import { Screen } from "../../node/dist/index.js";
 import { LayoutManager } from "../dist/index.js";
 
-import { initCore as initCore2 } from "@unblessed/core";
-import { NodeRuntime as NodeRuntime2 } from "@unblessed/node";
-
-initCore2(new NodeRuntime2());
-
 const screen = new Screen();
 const manager = new LayoutManager({ screen, debug: true });
 

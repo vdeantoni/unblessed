@@ -6,18 +6,12 @@
  *   tsx packages/react/examples/hello-react.tsx
  */
 import * as React from "react";
-import { Screen } from "../../node/dist/index.js";
+import { NodeRuntime } from "../../node/dist/index.js";
 import { BigText, Box, render, Text } from "../dist/index.js";
 
-// WORKAROUND: In development, ensure runtime is initialized for source files too
-import { initCore } from "@unblessed/core";
-import { NodeRuntime } from "@unblessed/node";
 import { List, Spacer } from "../src";
 import { Button } from "../src/components/Button";
 import { Input } from "../src/components/Input";
-initCore(new NodeRuntime());
-
-const screen = new Screen({ smartCSR: true, fullUnicode: true });
 
 const App = () => (
   <Box flexDirection="column" padding={1} gap={1}>
@@ -137,9 +131,9 @@ const App = () => (
   </Box>
 );
 
-const instance = render(<App />, { screen, debug: true });
+const instance = render(<App />, { runtime: new NodeRuntime(), debug: true });
 
-screen.key(["q", "C-c"], () => {
+instance.screen.key(["q", "C-c"], () => {
   console.log("React", React.version);
   instance.unmount();
   process.exit(0);

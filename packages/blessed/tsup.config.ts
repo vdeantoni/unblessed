@@ -23,7 +23,8 @@ export default defineConfig({
   shims: true,
   cjsInterop: true,
 
-  noExternal: ["@unblessed/node"],
+  external: ["pngjs", "omggif"],
+  noExternal: ["@unblessed/core"],
 
   platform: "node",
   target: "node22",

@@ -1,14 +1,61 @@
 /**
  * @unblessed/blessed - 100% backward compatible blessed API
  *
- * This package wraps @unblessed/node to provide the exact same API as the original
+ * This package wraps @unblessed/core to provide the exact same API as the original
  * blessed library. It's a drop-in replacement for users migrating from blessed.
  */
 
-import * as TuiTypes from "@unblessed/node";
-export * from "@unblessed/node";
+import type { Runtime } from "@unblessed/core";
+import * as TuiTypes from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
+import { Buffer } from "buffer";
+import * as child_process from "child_process";
+import { EventEmitter } from "events";
+import fs from "fs";
+import net from "net";
+import { GifReader } from "omggif";
+import path from "path";
+import { PNG } from "pngjs";
+import process from "process";
+import { Readable, Writable } from "stream";
+import { StringDecoder } from "string_decoder";
+import tty from "tty";
+import * as url from "url";
+import * as util from "util";
 
-// Runtime auto-initializes when @unblessed/node is imported
+/**
+ * Node.js runtime implementation (internal)
+ * @internal
+ */
+export class NodeRuntime implements Runtime {
+  fs = fs;
+  path = path;
+  process = process;
+  buffer = { Buffer };
+  url = url;
+  util = util;
+  stream = { Readable, Writable };
+  stringDecoder = { StringDecoder };
+  events = { EventEmitter };
+
+  images = {
+    png: { PNG },
+    gif: { GifReader },
+  };
+
+  processes = {
+    childProcess: child_process,
+  };
+
+  networking = {
+    net: net,
+    tty: tty,
+  };
+}
+
+setRuntime(new NodeRuntime());
+
+export * from "@unblessed/core";
 
 /**
  * WidgetFactory type - matches old blessed pattern

@@ -20,10 +20,10 @@ export default defineConfig({
   shims: true,
   cjsInterop: true,
 
-  noExternal: ["@unblessed/core"],
-
   platform: "node",
   target: "node22",
+
+  external: ["pngjs", "omggif"],
 
   onSuccess: async () => {
     await cp("../core/data", "dist/data", { recursive: true });

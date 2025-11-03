@@ -5,13 +5,13 @@
  * Uses multi-frame VRT to capture state changes over time.
  */
 
-import { Box, initCore, ScrollableText } from "@unblessed/core";
+import { Box, ScrollableText, setRuntime } from "@unblessed/core";
 import { describe } from "vitest";
 import { NodeRuntime } from "../../src";
 import { createMultiFrameVRTTest } from "../helpers/vrt-test.js";
 
 describe("VRT - Widget Interactions", () => {
-  initCore(new NodeRuntime());
+  setRuntime(new NodeRuntime());
 
   createMultiFrameVRTTest(
     "draggable box moves to different positions",

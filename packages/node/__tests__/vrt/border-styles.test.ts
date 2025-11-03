@@ -4,14 +4,14 @@
  * Visual regression tests for all border styles (single, double, round, bold, etc.).
  */
 
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 import { describe } from "vitest";
 import { Box } from "../../dist/index.js";
 import { NodeRuntime } from "../../src";
 import { createVRTTest } from "../helpers/vrt-test.js";
 
 describe("VRT - Border Styles", () => {
-  initCore(new NodeRuntime());
+  setRuntime(new NodeRuntime());
 
   createVRTTest(
     "all border styles showcase",

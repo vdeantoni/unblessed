@@ -1,6 +1,6 @@
 # @unblessed/blessed
 
-100% backward-compatible blessed API wrapper for [@unblessed/node](../node).
+100% backward-compatible blessed API wrapper for [@unblessed/core](../node).
 
 [![npm version](https://img.shields.io/npm/v/@unblessed/blessed)](https://www.npmjs.com/package/@unblessed/blessed)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
@@ -9,7 +9,7 @@
 
 ## Overview
 
-`@unblessed/blessed` provides a 100% backward-compatible API with the original [blessed](https://github.com/chjj/blessed) library. It's a thin wrapper over `@unblessed/node` that maintains the exact same API surface, making migration seamless.
+`@unblessed/blessed` provides a 100% backward-compatible API with the original [blessed](https://github.com/chjj/blessed) library. It's a thin wrapper over `@unblessed/core` that maintains the exact same API surface, making migration seamless.
 
 **Use this package if:**
 

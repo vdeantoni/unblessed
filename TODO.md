@@ -4,7 +4,7 @@ Code modernization and cleanup tasks for @unblessed.
 
 ## Triage
 
-1. Investigate why initCore(new NodeRuntime()); is needed by the vrt tests and can we improve it.
+1. Investigate why setRuntime(new NodeRuntime()); is needed by the vrt tests and can we improve it.
 2. implement all remaining tags:
    Effect	On	Escape Code	Off	Escape Code	Output Example
    Bold	1	\x1b[1m	21	\x1b[21m	This is BOLD

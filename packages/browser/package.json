@@ -73,6 +73,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@unblessed/core": "workspace:*",
     "assert": "^2.1.0",
     "buffer": "^6.0.3",
     "events": "^3.3.0",
@@ -85,13 +86,11 @@
   "devDependencies": {
     "@playwright/test": "^1.49.1",
     "@types/path-browserify": "^1.0.3",
-    "@unblessed/core": "workspace:*",
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
     "jsdom": "^25.0.1"
   },
   "peerDependencies": {
-    "@unblessed/core": "workspace:^",
     "xterm": "^5.0.0"
   },
   "engines": {

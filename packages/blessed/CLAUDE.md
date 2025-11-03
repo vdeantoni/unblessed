@@ -1,6 +1,6 @@
 # @unblessed/blessed - Backward Compatible Blessed API
 
-This package provides 100% backward compatibility with the original [blessed](https://github.com/chjj/blessed) library. It's a thin wrapper over `@unblessed/node` that matches the exact API structure of blessed, making it a true drop-in replacement.
+This package provides 100% backward compatibility with the original [blessed](https://github.com/chjj/blessed) library. It's a thin wrapper over `@unblessed/core` that matches the exact API structure of blessed, making it a true drop-in replacement.
 
 ## Purpose
 
@@ -26,8 +26,6 @@ We recommend using `@unblessed/node` directly with its modern class-based API in
 ```
 @unblessed/blessed
     ↓ (thin wrapper)
-@unblessed/node
-    ↓ (platform adapter)
 @unblessed/core
 ```
 
@@ -172,7 +170,7 @@ export default defineConfig({
     tput: "bin/tput.ts", // CLI tool
   },
   format: ["cjs", "esm"],
-  external: ["@unblessed/node"], // Don't bundle, use as peer dep
+  external: ["@unblessed/core"], // Don't bundle, use as peer dep
   onSuccess: async () => {
     // Copy terminfo/font data for CLI tool
     await cp("../core/data", "dist/usr", { recursive: true });
@@ -280,7 +278,7 @@ This ensures that any code written for `@types/blessed` will work with `@unbless
 No explicit initialization, runtime is set up via direct Node.js imports.
 
 **@unblessed/blessed:**
-Runtime auto-initializes when you import the package (via @unblessed/node). This is transparent to users but worth noting.
+Runtime auto-initializes when you import the package (via @unblessed/core). This is transparent to users but worth noting.
 
 ### Widget Attachment
 

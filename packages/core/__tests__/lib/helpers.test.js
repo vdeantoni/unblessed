@@ -2,7 +2,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as helpers from "../../src/lib/helpers.js";
-import { _clearRuntime, setRuntime } from "../../src/runtime-context.js";
+import { setRuntime } from "../../src/runtime-context.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,7 +46,7 @@ describe("helpers", () => {
   });
 
   afterEach(() => {
-    _clearRuntime();
+    setRuntime(null);
     vi.clearAllMocks();
   });
   describe("merge", () => {

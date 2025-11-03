@@ -110,9 +110,9 @@ When developing examples, the runtime needs to be initialized due to monorepo so
 
 ```tsx
 // WORKAROUND: In development
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 import { NodeRuntime } from "@unblessed/node";
-initCore(new NodeRuntime());
+setRuntime(new NodeRuntime());
 ```
 
 This is automatically added by the linter and won't be needed when packages are published to npm.
@@ -126,9 +126,9 @@ import { Screen } from "@unblessed/node";
 import { render, Box, Text } from "../src/index.js";
 
 // WORKAROUND for development
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 import { NodeRuntime } from "@unblessed/node";
-initCore(new NodeRuntime());
+setRuntime(new NodeRuntime());
 
 const MyExample = () => {
   return (

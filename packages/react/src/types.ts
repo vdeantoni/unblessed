@@ -2,8 +2,7 @@
  * types.ts - Type definitions for @unblessed/react
  */
 
-import type { KeyEvent, MouseEvent } from "@unblessed/core";
-import { Screen } from "@unblessed/core";
+import type { KeyEvent, MouseEvent, Runtime, Screen } from "@unblessed/core";
 import type { ReactNode } from "react";
 
 /**
@@ -11,10 +10,17 @@ import type { ReactNode } from "react";
  */
 export interface RenderOptions {
   /**
-   * Screen instance to render to (required)
+   * Runtime instance
    * Create this from @unblessed/node or @unblessed/browser
    */
-  screen: Screen;
+  runtime: Runtime;
+
+  /**
+   * Screen instance (optional)
+   * If not provided, render() will create a default Screen.
+   * If provided, you are responsible for calling screen.destroy().
+   */
+  screen?: Screen;
 
   /**
    * Debug mode - logs render cycles
@@ -26,6 +32,11 @@ export interface RenderOptions {
  * Instance returned by render()
  */
 export interface RenderInstance {
+  /**
+   * The screen instance.
+   */
+  screen: Screen;
+
   /**
    * Unmount the React tree and clean up
    */

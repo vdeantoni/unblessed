@@ -5,27 +5,12 @@
  * the Yoga layout width is updated to prevent truncation or layout issues.
  */
 
-import { Screen } from "@unblessed/core";
 import { useState } from "react";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Box, render, Text } from "../src/index.js";
+import { testRuntime } from "./setup.js";
 
 describe("Text Width Updates", () => {
-  let screen: Screen;
-
-  beforeEach(() => {
-    screen = new Screen({
-      smartCSR: true,
-      fullUnicode: true,
-      input: undefined,
-      output: undefined,
-    });
-  });
-
-  afterEach(() => {
-    screen.destroy();
-  });
-
   it("should handle single digit to double digit transitions", () => {
     let setCount: (c: number) => void;
 
@@ -40,9 +25,9 @@ describe("Text Width Updates", () => {
       );
     };
 
-    render(<Counter />, { screen });
+    const instance = render(<Counter />, { runtime: testRuntime });
 
-    const textWidget = screen.children[0].children[0].children[0];
+    const textWidget = instance.screen.children[0].children[0].children[0];
 
     expect(textWidget.content).toContain("Score: 9");
 
@@ -55,6 +40,8 @@ describe("Text Width Updates", () => {
 
     setCount(100);
     expect(textWidget.content).toContain("Score: 100");
+
+    instance.unmount();
   });
 
   it("should handle growing and shrinking text", () => {
@@ -71,9 +58,9 @@ describe("Text Width Updates", () => {
       );
     };
 
-    render(<DynamicText />, { screen });
+    const instance = render(<DynamicText />, { runtime: testRuntime });
 
-    const textWidget = screen.children[0].children[0].children[0];
+    const textWidget = instance.screen.children[0].children[0].children[0];
 
     expect(textWidget.content).toContain("Value: a");
 
@@ -85,5 +72,7 @@ describe("Text Width Updates", () => {
 
     setText("x");
     expect(textWidget.content).toContain("Value: x");
+
+    instance.unmount();
   });
 });

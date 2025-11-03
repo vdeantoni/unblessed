@@ -6,7 +6,7 @@
  * platform-specific functionality.
  */
 
-export { initCore } from "./runtime-context.js";
+export { setRuntime } from "./runtime-context.js";
 export * from "./runtime.js";
 
 // Re-export types

@@ -5,14 +5,14 @@
  * Run with UPDATE_SNAPSHOTS=1 to update baselines after intentional UI changes.
  */
 
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 import { describe } from "vitest";
 import { Box, List, Text } from "../../dist/index.js";
 import { NodeRuntime } from "../../src";
 import { createVRTTest } from "../helpers/vrt-test.js";
 
 describe("VRT - Widget Rendering", () => {
-  initCore(new NodeRuntime());
+  setRuntime(new NodeRuntime());
 
   createVRTTest(
     "box with border and content",

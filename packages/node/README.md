@@ -27,7 +27,7 @@ Node.js runtime adapter for [@unblessed/core](../core) - Build beautiful termina
 **Without this package**, you'd need to manually initialize the runtime:
 
 ```typescript
-import { initCore, Screen, Box } from '@unblessed/core';
+import { setRuntime, Screen, Box } from '@unblessed/core';
 import fs from 'fs';
 import process from 'process';
 import path from 'path';
@@ -35,7 +35,7 @@ import { Buffer } from 'buffer';
 // ... 15+ more imports
 
 // Manual runtime setup (boilerplate!)
-initCore({
+setRuntime({
   fs: { readFileSync: fs.readFileSync, existsSync: fs.existsSync, ... },
   path: { join: path.join, resolve: path.resolve, ... },
   process: { stdin: process.stdin, stdout: process.stdout, ... },
@@ -306,7 +306,7 @@ For complete widget options, see [@unblessed/core types](../core/src/types/optio
 
 ```typescript
 // Internal structure (simplified)
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 import fs from "fs";
 import process from "process";
 // ... other Node.js modules
@@ -318,7 +318,7 @@ const runtime = {
 };
 
 // Initialize @unblessed/core with Node.js runtime
-initCore(runtime);
+setRuntime(runtime);
 
 // Re-export all widgets
 export * from "@unblessed/core";

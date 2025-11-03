@@ -7,7 +7,7 @@
  * 3. Global references
  */
 
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 import { Buffer } from "buffer";
 import { BrowserRuntime } from "./browser-runtime.js";
 
@@ -85,7 +85,7 @@ if (
 
   // Step 4: Create and initialize BrowserRuntime
   const runtime = new BrowserRuntime();
-  initCore(runtime);
+  setRuntime(runtime);
 
   // Mark as initialized
   (globalThis as any).__BLESSED_BROWSER_INITIALIZED__ = true;

@@ -19,11 +19,7 @@ import { fileURLToPath } from "url";
 import * as util from "util";
 import { vi } from "vitest";
 import { clearEnvCache } from "../../src/lib/runtime-helpers.js";
-import {
-  _clearRuntime,
-  getRuntime,
-  initCore,
-} from "../../src/runtime-context.js";
+import { getRuntime, setRuntime } from "../../src/runtime-context.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -312,7 +308,7 @@ function createMockRuntime(options = {}) {
  * @param {object} options.env - Custom environment variables
  */
 export function initTestRuntime(options = {}) {
-  _clearRuntime();
+  setRuntime(null);
   clearEnvCache(); // Clear env cache to allow tests to set env vars
 
   // Use mocks only if explicitly requested or if custom options provided
@@ -321,7 +317,7 @@ export function initTestRuntime(options = {}) {
       ? createMockRuntime(options)
       : createNodeRuntimeForTests();
 
-  initCore(runtime);
+  setRuntime(runtime);
   return runtime;
 }
 

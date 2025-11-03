@@ -46,7 +46,10 @@
         "data/**",
         "templates/**",
         "__tests__/**/*.{ts,tsx,js,html}",
-        "vitest.config.ts"
+        "vitest.config.ts",
+        "tsconfig.json",
+        "tsup.config.ts",
+        "package.json"
       ],
       "outputs": ["coverage/**"],
       "outputLogs": "new-only"
@@ -72,7 +75,10 @@
         "data/**",
         "templates/**",
         "__tests__/**/*.{ts,tsx,js,html}",
-        "vitest.config.ts"
+        "vitest.config.ts",
+        "tsconfig.json",
+        "tsup.config.ts",
+        "package.json"
       ],
       "outputs": ["coverage/**"],
       "outputLogs": "new-only"
@@ -93,7 +99,11 @@
         "templates/**",
         "__tests__/**/*.{ts,tsx,js}",
         "eslint.config.js",
-        ".eslintignore"
+        ".eslintignore",
+        "vitest.config.ts",
+        "tsconfig.json",
+        "tsup.config.ts",
+        "package.json"
       ],
       "outputLogs": "new-only"
     },
@@ -106,7 +116,11 @@
         "templates/**",
         "__tests__/**/*.{ts,tsx,js}",
         "eslint.config.js",
-        ".eslintignore"
+        ".eslintignore",
+        "vitest.config.ts",
+        "tsconfig.json",
+        "tsup.config.ts",
+        "package.json"
       ],
       "outputLogs": "new-only"
     },
@@ -120,7 +134,11 @@
         "generated/**/*.md",
         "__tests__/**/*.{ts,tsx,js}",
         ".prettierrc",
-        ".prettierignore"
+        ".prettierignore",
+        "vitest.config.ts",
+        "tsconfig.json",
+        "tsup.config.ts",
+        "package.json"
       ],
       "outputLogs": "new-only"
     },
@@ -134,7 +152,11 @@
         "generated/**/*.md",
         "__tests__/**/*.{ts,tsx,js}",
         ".prettierrc",
-        ".prettierignore"
+        ".prettierignore",
+        "vitest.config.ts",
+        "tsconfig.json",
+        "tsup.config.ts",
+        "package.json"
       ],
       "outputLogs": "new-only"
     }

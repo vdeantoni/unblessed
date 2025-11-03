@@ -5,6 +5,7 @@
  * mount React components to an unblessed Screen.
  */
 
+import { Screen, setRuntime } from "@unblessed/core";
 import { LayoutManager } from "@unblessed/layout";
 import type { ReactNode } from "react";
 import { BoxDescriptor } from "./components/Box.js";
@@ -16,11 +17,10 @@ import type { RenderInstance, RenderOptions } from "./types.js";
  * Render a React element to an unblessed Screen
  *
  * @example
+ * Basic usage (render() creates screen automatically):
  * ```tsx
- * import { Screen } from '@unblessed/node';
+ * import { NodeRuntime } from '@unblessed/node';
  * import { render, Box, Text } from '@unblessed/react';
- *
- * const screen = new Screen();
  *
  * const App = () => (
  *   <Box flexDirection="row" gap={2}>
@@ -30,21 +30,50 @@ import type { RenderInstance, RenderOptions } from "./types.js";
  *   </Box>
  * );
  *
- * const instance = render(<App />, { screen });
+ * const instance = render(<App />, { runtime: new NodeRuntime() });
+ *
+ * // Later:
+ * instance.unmount();  // Automatically destroys screen
+ * ```
+ *
+ * @example
+ * Advanced usage (provide custom screen):
+ * ```tsx
+ * import { Screen, NodeRuntime } from '@unblessed/node';
+ * import { render, Box, Text } from '@unblessed/react';
+ *
+ * const screen = new Screen({
+ *   smartCSR: false,
+ *   debug: true,
+ *   log: './debug.log'
+ * });
+ *
+ * const instance = render(<App />, {
+ *   runtime: new NodeRuntime(),
+ *   screen
+ * });
  *
  * // Later:
  * instance.unmount();
+ * screen.destroy();  // You must destroy screen manually
  * ```
  */
 export function render(
   element: ReactNode,
   options: RenderOptions,
 ): RenderInstance {
-  const screen = options.screen;
+  setRuntime(options.runtime);
 
-  if (!screen) {
-    throw new Error("render() requires options.screen");
-  }
+  // Use provided screen or create default
+  const screen =
+    options.screen ||
+    new Screen({
+      smartCSR: true,
+      fullUnicode: true,
+    });
+
+  // Track whether screen was provided by user
+  const screenCreatedByRender = !options.screen;
 
   // Create LayoutManager
   const manager = new LayoutManager({
@@ -102,6 +131,7 @@ export function render(
   });
 
   return {
+    screen,
     unmount: () => {
       // Unmount React tree
       reconciler.updateContainer(null, container, null, () => {});
@@ -109,8 +139,10 @@ export function render(
       // Cleanup layout
       manager.destroy(rootLayoutNode);
 
-      // Cleanup screen
-      screen.destroy();
+      // Cleanup screen only if we created it
+      if (screenCreatedByRender) {
+        screen.destroy();
+      }
 
       // Resolve exit promise
       resolveExitPromise();

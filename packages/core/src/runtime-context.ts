@@ -17,48 +17,23 @@ export * from "./runtime.js";
 let runtime: Runtime | null = null;
 
 /**
- * Initialize @unblessed/core with a platform runtime
+ * Set the global runtime instance
  *
- * This is the primary API for platform packages to set up the runtime.
- * End users should call platform-specific init functions instead:
- * - @unblessed/node: `initNode()`
- * - @unblessed/browser: `initBrowser()`
+ * Called by platform packages during initialization to register their Runtime implementation.
+ * Should be called once before creating any widgets.
  *
- * @param rt - Platform runtime implementation (NodeRuntime, BrowserRuntime, etc.)
+ * @internal - Platform packages handle initialization automatically.
+ * Users typically don't need to call this directly.
  *
- * @example
- * ```typescript
- * // Platform package (internal use)
- * import { initCore } from '@unblessed/core';
- * import { NodeRuntime } from './runtime.js';
+ * Example (platform package):
+ *   import { setRuntime } from '@unblessed/core';
+ *   const runtime = new NodeRuntime();
+ *   setRuntime(runtime);
  *
- * export function initNode() {
- *   initCore(new NodeRuntime());
- * }
- * ```
- */
-export function initCore(rt: Runtime): void {
-  if (runtime && runtime !== rt) {
-    // In test environment, allow replacing runtime
-    const isTest =
-      typeof process !== "undefined" && process.env?.NODE_ENV === "test";
-    if (!isTest) {
-      throw new Error("Runtime already initialized with a different instance");
-    }
-  }
-  runtime = rt;
-}
-
-/**
- * Set the global runtime (internal API)
- *
- * @deprecated Use initCore() instead. This function is kept for backward compatibility
- * but will be removed in a future version.
- *
- * @internal
+ * @param rt - The Runtime implementation to use globally
  */
 export function setRuntime(rt: Runtime): void {
-  initCore(rt);
+  runtime = rt;
 }
 
 /**
@@ -66,7 +41,7 @@ export function setRuntime(rt: Runtime): void {
  * Throws if runtime not initialized
  *
  * @internal - Most code should not need to access runtime directly.
- * Platform packages handle initialization via initCore().
+ * Platform packages handle initialization via setRuntime().
  */
 export function getRuntime(): Runtime {
   if (!runtime) {
@@ -80,13 +55,4 @@ export function getRuntime(): Runtime {
     );
   }
   return runtime;
-}
-
-/**
- * Clear the runtime
- * FOR TESTING ONLY - allows tests to reset runtime between test cases
- * @internal
- */
-export function _clearRuntime(): void {
-  runtime = null;
 }

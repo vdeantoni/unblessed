@@ -2,27 +2,12 @@
  * content-update.test.tsx - Test content updates on state changes
  */
 
-import { Screen } from "@unblessed/core";
 import { useState } from "react";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Box, render, Text } from "../src/index.js";
+import { testRuntime } from "./setup.js";
 
 describe("Content Updates", () => {
-  let screen: Screen;
-
-  beforeEach(() => {
-    screen = new Screen({
-      smartCSR: true,
-      fullUnicode: true,
-      input: undefined,
-      output: undefined,
-    });
-  });
-
-  afterEach(() => {
-    screen.destroy();
-  });
-
   it("should update text content when state changes", () => {
     let setCount: (c: number) => void;
 
@@ -37,9 +22,9 @@ describe("Content Updates", () => {
       );
     };
 
-    render(<Counter />, { screen });
+    const instance = render(<Counter />, { runtime: testRuntime });
 
-    const rootWidget = screen.children[0];
+    const rootWidget = instance.screen.children[0];
     const boxWidget = rootWidget.children[0];
     const textWidget = boxWidget.children[0];
 
@@ -50,6 +35,8 @@ describe("Content Updates", () => {
 
     setCount(42);
     expect(textWidget.content).toContain("Count: 42");
+
+    instance.unmount();
   });
 
   it("should update multiple text widgets independently", () => {
@@ -70,9 +57,9 @@ describe("Content Updates", () => {
       );
     };
 
-    render(<Coords />, { screen });
+    const instance = render(<Coords />, { runtime: testRuntime });
 
-    const rootWidget = screen.children[0];
+    const rootWidget = instance.screen.children[0];
     const boxWidget = rootWidget.children[0];
     const textWidget1 = boxWidget.children[0];
     const textWidget2 = boxWidget.children[1];
@@ -87,5 +74,7 @@ describe("Content Updates", () => {
     setY(20);
     expect(textWidget1.content).toContain("X: 10");
     expect(textWidget2.content).toContain("Y: 20");
+
+    instance.unmount();
   });
 });

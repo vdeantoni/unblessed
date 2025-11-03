@@ -4,7 +4,7 @@
  */
 
 import type { Runtime } from "@unblessed/core";
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 import { Buffer } from "buffer";
 import * as child_process from "child_process";
 import { EventEmitter } from "events";
@@ -49,5 +49,5 @@ beforeAll(() => {
     } as Runtime["networking"],
   };
 
-  initCore(nodeRuntime);
+  setRuntime(nodeRuntime);
 });

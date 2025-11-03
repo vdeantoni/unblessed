@@ -2,7 +2,7 @@
  * Test setup for @unblessed/react
  */
 
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 import * as child_process from "child_process";
 import { EventEmitter } from "events";
 import * as fs from "fs";
@@ -89,10 +89,12 @@ function createMockRuntime() {
   };
 }
 
+// Export test runtime for use in tests
+export const testRuntime = createMockRuntime();
+
 export function initTestRuntime() {
-  const runtime = createMockRuntime();
-  initCore(runtime);
-  return runtime;
+  setRuntime(testRuntime);
+  return testRuntime;
 }
 
 beforeAll(() => {

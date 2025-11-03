@@ -37,7 +37,6 @@ export default defineConfig([
     },
 
     external: ["xterm"],
-    noExternal: ["@unblessed/core"],
 
     // No Node.js shims (we're targeting browser)
     shims: false,

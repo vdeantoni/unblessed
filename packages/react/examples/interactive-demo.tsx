@@ -14,10 +14,10 @@ import { NodeRuntime, Screen } from "@unblessed/node";
 import React, { useState } from "react";
 
 // WORKAROUND: In development, ensure runtime is initialized for source files too
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 import { BigText, Box, Button, Input, render, Text } from "../src/index.js";
 
-initCore(new NodeRuntime());
+setRuntime(new NodeRuntime());
 
 const InteractiveDemo = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });

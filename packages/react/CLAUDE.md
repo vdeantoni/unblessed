@@ -599,9 +599,9 @@ Due to monorepo dual-package issues (source vs dist), examples need explicit run
 
 ```tsx
 // WORKAROUND: In development
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 import { NodeRuntime } from "@unblessed/node";
-initCore(new NodeRuntime());
+setRuntime(new NodeRuntime());
 ```
 
 This won't be needed in production when packages are installed from npm.

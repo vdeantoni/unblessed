@@ -619,7 +619,7 @@ for (let i = 0; i < 9; i++) {
 
 ```javascript
 // __tests__/setup.js
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 
 function createMockRuntime() {
   return {
@@ -639,7 +639,7 @@ function createMockRuntime() {
 }
 
 beforeAll(() => {
-  initCore(createMockRuntime());
+  setRuntime(createMockRuntime());
 });
 ```
 

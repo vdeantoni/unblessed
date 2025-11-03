@@ -19,12 +19,7 @@ export default defineConfig({
   shims: true,
   cjsInterop: true,
 
-  external: [
-    "react",
-    "react-reconciler",
-    "@unblessed/core",
-    "@unblessed/layout",
-  ],
+  external: ["react"],
 
   platform: "neutral",
   target: "es2020",

@@ -18,7 +18,7 @@
  */
 
 import type { Runtime } from "@unblessed/core";
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 import { Buffer } from "buffer";
 import * as child_process from "child_process";
 import { EventEmitter } from "events";
@@ -64,7 +64,7 @@ export class NodeRuntime implements Runtime {
   };
 }
 
-initCore(new NodeRuntime());
+setRuntime(new NodeRuntime());
 
 // Re-export all from @unblessed/core
 export * from "@unblessed/core";

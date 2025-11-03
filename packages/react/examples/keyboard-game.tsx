@@ -10,9 +10,9 @@ import React, { useEffect, useState } from "react";
 import { BigText, Box, render, Text } from "../src/index.js";
 
 // WORKAROUND: In development, ensure runtime is initialized for source files too
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 
-initCore(new NodeRuntime());
+setRuntime(new NodeRuntime());
 
 const GRID_WIDTH = 20;
 const GRID_HEIGHT = 10;

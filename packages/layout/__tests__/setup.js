@@ -2,7 +2,7 @@
  * Test setup for @unblessed/layout
  */
 
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 import * as child_process from "child_process";
 import { EventEmitter } from "events";
 import * as fs from "fs";
@@ -91,7 +91,7 @@ function createMockRuntime() {
 
 export function initTestRuntime() {
   const runtime = createMockRuntime();
-  initCore(runtime);
+  setRuntime(runtime);
   return runtime;
 }
 

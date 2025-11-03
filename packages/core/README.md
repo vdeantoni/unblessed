@@ -103,7 +103,7 @@ Only needed if you're building a custom runtime adapter:
 
 ```typescript
 import { Screen, Box } from "@unblessed/core";
-import { initCore } from "@unblessed/core";
+import { setRuntime } from "@unblessed/core";
 
 // Provide your custom runtime implementation
 const myRuntime = {
@@ -116,7 +116,7 @@ const myRuntime = {
   // ... other required APIs
 };
 
-initCore(myRuntime);
+setRuntime(myRuntime);
 
 // Now you can use widgets
 const screen = new Screen();
