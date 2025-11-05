@@ -12,8 +12,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { setCurrentTheme } from "../theme-registry.js";
-import type { Theme } from "../theme.js";
+import { setCurrentTheme } from "../themes/theme-registry.js";
+import type { Theme } from "../themes/theme.js";
 
 /**
  * Theme context value interface.

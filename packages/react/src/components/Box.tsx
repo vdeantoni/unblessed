@@ -10,22 +10,25 @@ import {
 } from "@unblessed/layout";
 import type { ReactNode } from "react";
 import { forwardRef, type PropsWithChildren } from "react";
-import type { Theme } from "../theme.js";
+import type { Theme } from "../themes/theme.js";
 import { InteractiveWidgetProps } from "../widget-descriptors";
 import {
-  buildBorder,
   buildFocusableOptions,
+  buildFocusEffects,
+  buildHoverEffects,
   buildStyleObject,
+  extractEventHandlers,
+  extractFlexboxProps,
   extractStyleProps,
+  getComponentDefaults,
+  initializeBorderStyle,
   mergeStyles,
-  prepareBorderStyle,
 } from "../widget-descriptors/helpers.js";
 
 export const COMMON_WIDGET_OPTIONS = {
   tags: true,
   mouse: true,
   keys: true,
-  clickable: true,
 };
 
 /**
@@ -40,7 +43,6 @@ export const COMMON_WIDGET_OPTIONS = {
  * - Borders (borderStyle, borderColor, etc.)
  */
 export interface BoxProps extends InteractiveWidgetProps {
-  tags?: boolean;
   content?: string;
   children?: ReactNode;
 }
@@ -55,138 +57,56 @@ export class BoxDescriptor<T extends BoxProps> extends WidgetDescriptor<
   readonly type: string = "box";
 
   get flexProps(): FlexboxProps {
-    // Extract all flexbox-related properties
-    const {
-      flexGrow,
-      flexShrink,
-      flexBasis,
-      flexDirection,
-      flexWrap,
-      justifyContent,
-      alignItems,
-      alignSelf,
-      width,
-      height,
-      minWidth,
-      minHeight,
-      maxWidth,
-      maxHeight,
-      padding,
-      paddingX,
-      paddingY,
-      paddingTop,
-      paddingBottom,
-      paddingLeft,
-      paddingRight,
-      border,
-      borderTop,
-      borderBottom,
-      borderLeft,
-      borderRight,
-      margin,
-      marginX,
-      marginY,
-      marginTop,
-      marginBottom,
-      marginLeft,
-      marginRight,
-      gap,
-      rowGap,
-      columnGap,
-      position,
-      display,
-    } = this.props;
-
-    const flexboxProps: FlexboxProps = {};
-
-    // Only include defined properties
-    if (flexGrow !== undefined) flexboxProps.flexGrow = flexGrow;
-    if (flexShrink !== undefined) flexboxProps.flexShrink = flexShrink;
-    if (flexBasis !== undefined) flexboxProps.flexBasis = flexBasis;
-    if (flexDirection !== undefined) flexboxProps.flexDirection = flexDirection;
-    if (flexWrap !== undefined) flexboxProps.flexWrap = flexWrap;
-    if (justifyContent !== undefined)
-      flexboxProps.justifyContent = justifyContent;
-    if (alignItems !== undefined) flexboxProps.alignItems = alignItems;
-    if (alignSelf !== undefined) flexboxProps.alignSelf = alignSelf;
-    if (width !== undefined) flexboxProps.width = width;
-    if (height !== undefined) flexboxProps.height = height;
-    if (minWidth !== undefined) flexboxProps.minWidth = minWidth;
-    if (minHeight !== undefined) flexboxProps.minHeight = minHeight;
-    if (maxWidth !== undefined) flexboxProps.maxWidth = maxWidth;
-    if (maxHeight !== undefined) flexboxProps.maxHeight = maxHeight;
-    if (padding !== undefined) flexboxProps.padding = padding;
-    if (paddingX !== undefined) flexboxProps.paddingX = paddingX;
-    if (paddingY !== undefined) flexboxProps.paddingY = paddingY;
-    if (paddingTop !== undefined) flexboxProps.paddingTop = paddingTop;
-    if (paddingBottom !== undefined) flexboxProps.paddingBottom = paddingBottom;
-    if (paddingLeft !== undefined) flexboxProps.paddingLeft = paddingLeft;
-    if (paddingRight !== undefined) flexboxProps.paddingRight = paddingRight;
-    if (border !== undefined) flexboxProps.border = border ? 1 : 0;
-    if (borderTop !== undefined) flexboxProps.borderTop = borderTop;
-    if (borderBottom !== undefined) flexboxProps.borderBottom = borderBottom;
-    if (borderLeft !== undefined) flexboxProps.borderLeft = borderLeft;
-    if (borderRight !== undefined) flexboxProps.borderRight = borderRight;
-    if (margin !== undefined) flexboxProps.margin = margin;
-    if (marginX !== undefined) flexboxProps.marginX = marginX;
-    if (marginY !== undefined) flexboxProps.marginY = marginY;
-    if (marginTop !== undefined) flexboxProps.marginTop = marginTop;
-    if (marginBottom !== undefined) flexboxProps.marginBottom = marginBottom;
-    if (marginLeft !== undefined) flexboxProps.marginLeft = marginLeft;
-    if (marginRight !== undefined) flexboxProps.marginRight = marginRight;
-    if (gap !== undefined) flexboxProps.gap = gap;
-    if (rowGap !== undefined) flexboxProps.rowGap = rowGap;
-    if (columnGap !== undefined) flexboxProps.columnGap = columnGap;
-    if (position !== undefined) flexboxProps.position = position;
-    if (display !== undefined) flexboxProps.display = display;
-
-    return flexboxProps;
+    return extractFlexboxProps(this.props);
   }
 
   get widgetOptions(): Record<string, any> {
     const widgetOptions: any = {};
 
-    // Build border using helper function (pass theme for color resolution)
-    const border = buildBorder(this.props, this.theme);
-    if (border) {
-      widgetOptions.border = border;
-      // Pre-populate style.border.fg
-      widgetOptions.style = prepareBorderStyle(border);
-    } else {
-      widgetOptions.style = {};
+    // Initialize border and style.border in one clean step
+    const borderInit = initializeBorderStyle(
+      this,
+      !!this.props.hover?.border,
+      !!this.props.focus?.border,
+    );
+    if (borderInit.border) {
+      widgetOptions.border = borderInit.border;
     }
-
-    // Ensure style.border exists if hover/focus have border effects
-    // This prevents errors when setEffects tries to save original border values
-    if (this.props.hover?.border || this.props.focus?.border) {
-      widgetOptions.style.border = widgetOptions.style.border || {};
-    }
+    widgetOptions.style = borderInit.style;
 
     // Build focusable options using helper function
     // Box is not focusable by default (no defaultTabIndex)
     Object.assign(widgetOptions, buildFocusableOptions(this.props));
 
-    // Base/default state styling from direct props (pass theme for color resolution)
+    // Get theme defaults for this component type
+    const defaults = getComponentDefaults(this);
+
+    // Base/default state styling from direct props
     const defaultStyle = extractStyleProps(this.props);
-    const baseStyle = buildStyleObject(defaultStyle, this.theme);
+    const baseStyle = buildStyleObject(this, defaultStyle);
     if (Object.keys(baseStyle).length > 0) {
       widgetOptions.style = mergeStyles(widgetOptions.style, baseStyle);
     }
 
-    // Hover effects (pass theme for color resolution)
+    // Build hover effects - use props or fall back to theme defaults
+    let hoverEffects = null;
     if (this.props.hover) {
-      widgetOptions.hoverEffects = buildStyleObject(
-        this.props.hover,
-        this.theme,
-      );
+      hoverEffects = buildHoverEffects(this, this.props.hover);
+    } else if (defaults.hoverFg || defaults.hoverBg) {
+      // Apply theme defaults for hover
+      const themeHover: any = {};
+      if (defaults.hoverFg) themeHover.fg = defaults.hoverFg;
+      if (defaults.hoverBg) themeHover.bg = defaults.hoverBg;
+      hoverEffects = buildHoverEffects(this, themeHover);
+    }
+    if (hoverEffects) {
+      widgetOptions.hoverEffects = hoverEffects;
     }
 
-    // Focus effects (pass theme for color resolution)
-    if (this.props.focus) {
-      widgetOptions.focusEffects = buildStyleObject(
-        this.props.focus,
-        this.theme,
-      );
+    // Build focus effects - automatically applies focusBorderColor from theme
+    const focusEffects = buildFocusEffects(this, this.props.focus);
+    if (focusEffects) {
+      widgetOptions.focusEffects = focusEffects;
     }
 
     // Content
@@ -194,36 +114,11 @@ export class BoxDescriptor<T extends BoxProps> extends WidgetDescriptor<
       widgetOptions.content = this.props.content;
     }
 
-    // Tags
-    if (this.props.tags !== undefined) {
-      widgetOptions.tags = this.props.tags;
-    }
-
     return widgetOptions;
   }
 
   get eventHandlers(): Record<string, Function> {
-    const handlers: Record<string, Function> = {};
-
-    // Mouse events
-    if (this.props.onClick) handlers.click = this.props.onClick;
-    if (this.props.onMouseDown) handlers.mousedown = this.props.onMouseDown;
-    if (this.props.onMouseUp) handlers.mouseup = this.props.onMouseUp;
-    if (this.props.onMouseMove) handlers.mousemove = this.props.onMouseMove;
-    if (this.props.onMouseOver) handlers.mouseover = this.props.onMouseOver;
-    if (this.props.onMouseOut) handlers.mouseout = this.props.onMouseOut;
-    if (this.props.onMouseWheel) handlers.mousewheel = this.props.onMouseWheel;
-    if (this.props.onWheelDown) handlers.wheeldown = this.props.onWheelDown;
-    if (this.props.onWheelUp) handlers.wheelup = this.props.onWheelUp;
-
-    // Keyboard events
-    if (this.props.onKeyPress) handlers.keypress = this.props.onKeyPress;
-
-    // Focus events
-    if (this.props.onFocus) handlers.focus = this.props.onFocus;
-    if (this.props.onBlur) handlers.blur = this.props.onBlur;
-
-    return handlers;
+    return extractEventHandlers(this.props);
   }
 
   createWidget(layout: ComputedLayout, screen: Screen): BoxWidget {

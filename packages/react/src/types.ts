@@ -4,7 +4,7 @@
 
 import type { KeyEvent, MouseEvent, Runtime, Screen } from "@unblessed/core";
 import type { ReactNode } from "react";
-import type { Theme } from "./theme.js";
+import type { Theme } from "./themes/theme.js";
 
 /**
  * Options for the render() function

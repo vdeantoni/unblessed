@@ -29,6 +29,9 @@ importers:
       '@semantic-release/github':
         specifier: ^12.0.0
         version: 12.0.0(semantic-release@25.0.0(typescript@5.9.3))
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
       '@types/node':
         specifier: 24.6.2
         version: 24.6.2
@@ -56,6 +59,9 @@ importers:
       husky:
         specifier: ^9.1.7
         version: 9.1.7
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
       omggif:
         specifier: ^1.0.10
         version: 1.0.10
@@ -314,6 +320,9 @@ importers:
       '@unblessed/layout':
         specifier: workspace:*
         version: link:../layout
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
       react-reconciler:
         specifier: 0.29.2
         version: 0.29.2(react@18.3.1)
@@ -321,6 +330,9 @@ importers:
       '@testing-library/react':
         specifier: ^16.1.0
         version: 16.3.0(@testing-library/dom@10.4.1)(@types/react@18.3.26)(react-dom@19.2.0(react@18.3.1))(react@18.3.1)
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
       '@types/react':
         specifier: ^18.3.18
         version: 18.3.26
@@ -2881,6 +2893,12 @@ packages:
 
   '@types/jsonfile@6.1.4':
     resolution: {integrity: sha512-D5qGUYwjvnNNextdU59/+fI+spnwtTFmyQP0h+PfIOSkNfpU6AOICUOkm4i0OnSk+NyjdPJrxCDro0sJsWlRpQ==}
+
+  '@types/lodash-es@4.17.12':
+    resolution: {integrity: sha512-0NgftHUcV4v34VhXm8QBSftKVXtbkBG3ViCjs6+eJ5a6y6Mi/jiFGPc1sC7QK+9BFhWrURE3EOggmWaSxL9OzQ==}
+
+  '@types/lodash@4.17.20':
+    resolution: {integrity: sha512-H3MHACvFUEiujabxhaI/ImO6gUrd8oOurg7LQtS7mbwIXA/cUqWrvBsaeJ23aZEPk1TAYkurjfMbSELfoCXlGA==}
 
   '@types/mdast@4.0.4':
     resolution: {integrity: sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==}
@@ -12350,6 +12368,12 @@ snapshots:
   '@types/jsonfile@6.1.4':
     dependencies:
       '@types/node': 24.6.2
+
+  '@types/lodash-es@4.17.12':
+    dependencies:
+      '@types/lodash': 4.17.20
+
+  '@types/lodash@4.17.20': {}
 
   '@types/mdast@4.0.4':
     dependencies:

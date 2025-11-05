@@ -10,7 +10,7 @@ import {
 } from "@unblessed/layout";
 import type { ReactNode } from "react";
 import { forwardRef, type PropsWithChildren } from "react";
-import type { Theme } from "../theme.js";
+import type { Theme } from "../themes/theme.js";
 import type { StyleObject } from "../widget-descriptors/common-props.js";
 import { buildTextStyles } from "../widget-descriptors/helpers.js";
 import { COMMON_WIDGET_OPTIONS } from "./Box";
@@ -53,8 +53,16 @@ export class TextDescriptor extends WidgetDescriptor<TextProps, Theme> {
   get widgetOptions() {
     const widgetOptions: any = {};
 
-    // Build text styles using helper function (pass theme for color resolution)
-    const textStyles = buildTextStyles(this.props, this.theme);
+    // Track which style props were explicitly provided by user
+    // This prevents inheritance from overriding user choices
+    widgetOptions._explicitProps = {
+      fg: this.props.color !== undefined || this.props.fg !== undefined,
+      bg:
+        this.props.backgroundColor !== undefined || this.props.bg !== undefined,
+    };
+
+    // Build text styles using helper function (pass 'text' as component type)
+    const textStyles = buildTextStyles(this, "text");
     if (textStyles) {
       widgetOptions.style = textStyles;
     }

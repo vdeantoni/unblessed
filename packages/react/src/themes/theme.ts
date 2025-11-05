@@ -1,10 +1,14 @@
 /**
  * theme.ts - Theme type system for @unblessed/react
  *
- * Three-layer design token architecture:
+ * Three-layer design token architecture with cascading defaults:
  * 1. Primitives - Color scales (gray50-900, blue50-900, etc.)
  * 2. Semantic - Intent-based colors (primary, success, error, etc.)
- * 3. Components - Widget-specific defaults (box.bg, button.fg, etc.)
+ * 3. Global - Default styles for all components
+ * 4. Components - Widget-specific overrides
+ *
+ * Resolution order (CSS-like cascade):
+ * User Props → Component Theme → Global Theme → Hardcoded Fallbacks
  */
 
 /**
@@ -68,77 +72,94 @@ export interface ThemeSemantic {
 
   // UI elements
   border: string; // Default border color
-  borderFocus: string; // Focused border color
-  borderHover: string; // Hovered border color
   shadow: string; // Shadow/overlay color
 
-  // Interactive elements
-  hover: string; // Hover background
-  focus: string; // Focus background
-  active: string; // Active/pressed state
-  disabled: string; // Disabled state
+  // Focus
+  focus: string; // Focus color
+}
 
-  // Selection
-  selection: string; // Selected items
-  selectionForeground: string; // Text on selection
+/**
+ * Global defaults that apply to ALL components unless overridden.
+ * Provides DRY defaults and consistent styling across the theme.
+ *
+ * Resolution order: Component Theme → Global → Hardcoded Fallbacks
+ */
+export interface GlobalDefaults {
+  // Text defaults
+  fg?: string; // Default foreground color
+  bg?: string; // Default background color
+
+  // Border defaults
+  borderStyle?: string; // 'single', 'double', 'round', 'bold'
+  borderColor?: string;
+  focusBorderColor?: string;
 }
 
 /**
  * Component-specific color defaults.
  * Each widget type can define its default color scheme.
+ * All fields are optional - components inherit from global defaults.
  */
-export interface ComponentColors {
+export interface ComponentDefaults {
   box: {
-    bg: string;
-    fg: string;
-    border: string;
+    bg?: string;
+    fg?: string;
+    borderStyle?: string;
   };
   button: {
-    bg: string;
-    fg: string;
-    border: string;
-    bgHover: string;
-    bgActive: string;
-    bgDisabled: string;
+    bg?: string;
+    fg?: string;
+    borderStyle?: string;
+    hoverBg?: string;
+    hoverFg?: string;
   };
   input: {
-    bg: string;
-    fg: string;
-    border: string;
-    borderFocus: string;
-    placeholder: string;
+    bg?: string;
+    fg?: string;
+    borderStyle?: string;
   };
   text: {
-    fg: string;
-    fgMuted: string;
+    fg?: string;
+    bg?: string;
+  };
+  bigtext: {
+    fg?: string;
   };
   list: {
-    bg: string;
-    fg: string;
-    selected: string;
-    selectedFg: string;
-    item: {
-      hover: string;
-      hoverFg: string;
+    bg?: string;
+    fg?: string;
+    borderStyle?: string;
+    item?: {
+      bg?: string;
+      fg?: string;
+      selectedFg?: string;
+      selectedBg?: string;
+      hoverFg?: string;
+      hoverBg?: string;
     };
   };
   progressBar: {
-    bg: string;
-    fg: string;
-    bar: string;
+    bg?: string;
+    fg?: string;
+    bar?: string;
+    borderStyle?: string;
   };
   scrollbar: {
-    track: string;
-    thumb: string;
+    track?: string;
+    thumb?: string;
   };
 }
 
 /**
- * Complete theme definition combining all three layers.
+ * Complete theme definition combining all four layers.
+ *
+ * Resolution order (CSS-like cascade):
+ * User Props (highest) → Component → Global → Hardcoded (lowest)
  */
 export interface Theme {
   name: string;
   primitives: ThemePrimitives;
   semantic: ThemeSemantic;
-  components: ComponentColors;
+  global: GlobalDefaults;
+  components: ComponentDefaults;
 }

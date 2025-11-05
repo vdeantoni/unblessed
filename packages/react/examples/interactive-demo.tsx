@@ -14,21 +14,13 @@
  * Run with:
  *   node --import tsx --no-warnings interactive-demo.tsx
  */
-
 import { NodeRuntime } from "@unblessed/node";
+import * as React from "react";
 import { useState } from "react";
 
-import {
-  BigText,
-  Box,
-  Button,
-  Input,
-  render,
-  Text,
-  unblessedTheme,
-} from "../dist/index.js";
+import { BigText, Box, Button, Input, render, Text } from "../dist/index.js";
 
-const InteractiveDemo = () => {
+const InteractiveDemo: React.FC = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [lastClick, setLastClick] = useState({ x: 0, y: 0 });
   const [clickCount, setClickCount] = useState(0);
@@ -254,6 +246,5 @@ const InteractiveDemo = () => {
 // Render the app with unblessed theme
 render(<InteractiveDemo />, {
   runtime: new NodeRuntime(),
-  theme: unblessedTheme,
   debug: false,
 });

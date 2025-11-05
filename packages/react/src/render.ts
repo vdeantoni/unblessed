@@ -13,8 +13,8 @@ import { ThemeProvider } from "./components/ThemeProvider.js";
 import { createElement } from "./dom.js";
 import { ScreenProvider } from "./hooks/ScreenContext.js";
 import reconciler, { setLayoutManager } from "./reconciler.js";
-import { setCurrentTheme } from "./theme-registry.js";
 import { unblessedTheme } from "./themes/index.js";
+import { setCurrentTheme } from "./themes/theme-registry.js";
 import type { RenderInstance, RenderOptions } from "./types.js";
 
 /**

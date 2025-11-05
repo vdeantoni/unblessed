@@ -22,6 +22,11 @@ Code modernization and cleanup tasks for @unblessed.
        44 +      }
        45 +    };
        46
+4. Screen Reader Support
+5. useFocus hook plus navigation improvements
+   widget.focusable = true;
+   screen.focusPush(widget);
+6. 
 
 
 ## High Priority

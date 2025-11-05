@@ -13,9 +13,13 @@ export { createDescriptor } from "./factory.js";
 export {
   buildBorder,
   buildFocusableOptions,
+  buildItemStyles,
   buildTextStyles,
+  extractEventHandlers,
+  extractFlexboxProps,
+  getComponentDefaults,
+  initializeBorderStyle,
   mergeStyles,
-  prepareBorderStyle,
 } from "./helpers.js";
 
 // Re-export descriptors from components

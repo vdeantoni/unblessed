@@ -16,13 +16,13 @@
  */
 
 import { NodeRuntime } from "@unblessed/node";
-import { useEffect, useState } from "react";
-import { BigText, Box, render, Text, unblessedTheme } from "../dist/index.js";
+import React, { useEffect, useState } from "react";
+import { BigText, Box, render, Text } from "../dist/index.js";
 
 const GRID_WIDTH = 20;
 const GRID_HEIGHT = 10;
 
-const KeyboardGame = () => {
+const KeyboardGame: React.FC = () => {
   const [playerPos, setPlayerPos] = useState({ x: 10, y: 5 });
   const [stars, setStars] = useState([
     { x: 5, y: 3 },
@@ -200,6 +200,5 @@ const KeyboardGame = () => {
 // Render the app with unblessed theme
 render(<KeyboardGame />, {
   runtime: new NodeRuntime(),
-  theme: unblessedTheme,
   debug: false,
 });

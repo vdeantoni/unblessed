@@ -13,7 +13,7 @@ import { InputDescriptor } from "../components/Input.js";
 import { ListDescriptor } from "../components/List.js";
 import { SpacerDescriptor } from "../components/Spacer.js";
 import { TextDescriptor } from "../components/Text.js";
-import type { Theme } from "../theme.js";
+import type { Theme } from "../themes/theme.js";
 
 /**
  * Registry mapping type strings to descriptor class constructors

@@ -98,19 +98,68 @@ class BoxDescriptor extends WidgetDescriptor<BoxProps> {
 Descriptors use helper functions to compose features without inheritance constraints:
 
 ```typescript
-// Box needs borders + text styles
+// Example: Box descriptor uses helpers for clean, composable code
+get flexProps() {
+  return extractFlexboxProps(this.props);  // Extracts all 40+ flexbox props
+}
+
 get widgetOptions() {
-  const border = buildBorder(this.props);        // Helper function
-  const textStyles = buildTextStyles(this.props); // Helper function
-  const merged = mergeStyles(
-    prepareBorderStyle(border),
-    textStyles
-  );
-  return { border, style: merged, ... };
+  const borderInit = initializeBorderStyle(this, ...);  // Handles borders
+  const baseStyle = buildStyleObject(this, ...);        // Builds base styling
+  const hoverEffects = buildHoverEffects(this, ...);    // Builds hover effects
+  const focusEffects = buildFocusEffects(this, ...);    // Builds focus effects
+  return { border, style, hoverEffects, focusEffects, ... };
+}
+
+get eventHandlers() {
+  return extractEventHandlers(this.props);  // Maps all React events
 }
 ```
 
 This allows flexible composition - any widget can use any combination of helpers without needing complex inheritance hierarchies.
+
+### Available Helper Functions
+
+**Layout Extraction:**
+
+- `extractFlexboxProps(props)` - Extracts all 40+ flexbox properties
+- Replaces 87 lines of repetitive if statements with single call
+
+**Event Extraction:**
+
+- `extractEventHandlers(props)` - Maps React event props to unblessed events
+- Handles onClick → click, onKeyPress → keypress, etc.
+- Replaces 22 lines of repetitive mapping with single call
+
+**Border & Styling:**
+
+- `initializeBorderStyle(descriptor, hasHoverBorder, hasFocusBorder)` - Complete border initialization
+- `buildBorder(descriptor)` - Creates border object from props
+- `buildStyleObject(descriptor, styleObj?)` - Builds style with theme cascade
+- `extractStyleProps(props)` - Extracts style properties from props
+
+**Effects (Hover & Focus):**
+
+- `buildEffects(descriptor, style, options)` - Unified effect builder
+- `buildHoverEffects(descriptor, hoverStyle)` - Builds hover effects with theme fallback
+- `buildFocusEffects(descriptor, focusStyle, hasBorder)` - Builds focus effects + auto focusBorderColor
+- Automatically applies `theme.global.focusBorderColor` to bordered widgets
+
+**List-Specific:**
+
+- `buildItemStyles(descriptor, propStyle, themeDefaults, config)` - List item styling with theme fallback
+- Handles itemStyle, itemSelected, itemHover patterns
+- Replaces 66 lines of repetitive code with 3 function calls
+
+**Focus Management:**
+
+- `buildFocusableOptions(props, defaultTabIndex?)` - Sets tabIndex, keyable, clickable
+
+**Utilities:**
+
+- `getComponentDefaults(descriptor)` - Merges component → global theme defaults
+- `mergeStyles(...styles)` - Merges style objects with nested border handling
+- `buildTextStyles(descriptor, componentType?)` - Text styling with theme override
 
 ### Key Components
 
@@ -124,9 +173,17 @@ This allows flexible composition - any widget can use any combination of helpers
 **2. widget-descriptors/** - Descriptor infrastructure
 
 - base.ts - WidgetDescriptor abstract base class
-- helpers.ts - Composition helpers (buildBorder, buildTextStyles, buildFocusableOptions)
-- common-props.ts - Shared prop interfaces (BorderProps, TextStyleProps, etc.)
+- helpers.ts - Composition helpers (20+ functions for borders, effects, focus, events, layout)
+- common-props.ts - Shared prop interfaces (BorderProps, StyleObject, etc.)
 - factory.ts - Descriptor registry and creation
+
+**Key helpers:**
+
+- `extractFlexboxProps()` - 87 lines → 1 call
+- `extractEventHandlers()` - 22 lines → 1 call
+- `buildItemStyles()` - Unified List item styling
+- `buildEffects()` - Unified hover/focus effect builder
+- `initializeBorderStyle()` - Complete border initialization
 
 **3. dom.ts** - Virtual DOM
 
@@ -442,24 +499,43 @@ This ensures "X: " + "42" → "X: 42" instead of just "42".
 packages/react/
 ├── src/
 │   ├── index.ts              # Main exports
-│   ├── types.ts              # TypeScript definitions (including EventHandlers)
+│   ├── types.ts              # TypeScript definitions
 │   ├── jsx.d.ts              # JSX element declarations
 │   ├── dom.ts                # Virtual DOM (wraps LayoutNode)
-│   ├── reconciler.ts         # React reconciler config + event extraction
+│   ├── reconciler.ts         # React reconciler config
 │   ├── render.ts             # render() function
-│   └── components/
-│       ├── Box.tsx           # Box component
-│       ├── Text.tsx          # Text component
-│       ├── Spacer.tsx        # Spacer component
-│       ├── Button.tsx        # Button component (with events)
-│       ├── Input.tsx         # Input component (with events)
-│       └── BigText.tsx       # BigText component
+│   ├── themes/               # Theme system
+│   │   ├── theme.ts          # Theme type definitions
+│   │   ├── theme-utils.ts    # Color resolution utilities
+│   │   ├── theme-registry.ts # Theme storage/retrieval
+│   │   ├── unblessed.ts      # Default theme
+│   │   └── matrix.ts         # Matrix theme
+│   ├── widget-descriptors/   # Descriptor infrastructure
+│   │   ├── base.ts           # WidgetDescriptor base class
+│   │   ├── helpers.ts        # 20+ composition helpers
+│   │   ├── common-props.ts   # Shared prop interfaces
+│   │   ├── factory.ts        # Descriptor registry
+│   │   └── index.ts          # Public exports
+│   └── components/           # React components
+│       ├── Box.tsx           # Box component + descriptor
+│       ├── Text.tsx          # Text component + descriptor
+│       ├── Spacer.tsx        # Spacer component + descriptor
+│       ├── Button.tsx        # Button component + descriptor
+│       ├── Input.tsx         # Input component + descriptor
+│       ├── List.tsx          # List component + descriptor
+│       ├── BigText.tsx       # BigText component + descriptor
+│       └── ThemeProvider.tsx # Theme context provider
 ├── __tests__/
 │   ├── setup.ts              # Test setup
-│   ├── render.test.tsx       # Basic rendering tests (4 tests)
-│   └── events.test.tsx       # Event handling tests (6 tests)
+│   ├── render.test.tsx       # Basic rendering tests
+│   ├── events.test.tsx       # Event handling tests
+│   ├── focus-effects.test.tsx # Focus effects tests
+│   └── themes.test.tsx       # Theme tests
 ├── examples/
-│   └── hello-react.tsx       # Example app
+│   ├── hello-react.tsx       # Basic example
+│   ├── interactive-demo.tsx  # Interactive demo
+│   ├── keyboard-game.tsx     # Keyboard game
+│   └── theme-demo.tsx        # Theme showcase
 ├── package.json
 ├── tsconfig.json
 ├── tsup.config.ts
@@ -556,7 +632,7 @@ interface Theme {
   name: string;
   primitives: ThemePrimitives; // Color scales (50-900)
   semantic: ThemeSemantic; // Intent-based colors
-  components: ComponentColors; // Widget defaults
+  components: ComponentDefaults; // Widget defaults
 }
 ```
 
@@ -730,24 +806,43 @@ node --import tsx --no-warnings theme-demo.tsx
 - Flexbox layout (flexGrow, justifyContent, gap, etc.)
 - Border styles and colors (per-side support)
 - Absolute positioning from Yoga
-- **Event handling (onClick, onKeyPress, onSubmit, etc.)**
-- **Event cleanup on update/unmount**
-- **Handler rebinding on prop changes**
-- **Content updates on state changes (text concatenation)**
-- **Widget descriptor pattern for type-safe configuration**
-- **Composition via helper functions (borders, text styles, focus)**
+- Event handling (onClick, onKeyPress, onSubmit, etc.)
+- Event cleanup on update/unmount
+- Handler rebinding on prop changes
+- Content updates on state changes (text concatenation)
+- Widget descriptor pattern for type-safe configuration
+- **Composition via 20+ helper functions:**
+  - `extractFlexboxProps()` - Automatic flexbox extraction
+  - `extractEventHandlers()` - Automatic event mapping
+  - `buildItemStyles()` - List item styling with theme fallback
+  - `buildEffects()` - Unified hover/focus effect builder
+  - `initializeBorderStyle()` - Complete border initialization
+  - And 15+ more specialized helpers
 - **Theme system with runtime switching (useTheme hook)**
 - **Design token architecture (primitives → semantic → components)**
+- **Two built-in themes (unblessedTheme, matrixTheme)**
+- **State styling (hover and focus effects)**
+- **Automatic theme fallback for all components:**
+  - Button automatically uses theme.components.button.hoverFg/hoverBg
+  - List items use theme.components.list.item.{selectedFg,hoverFg,etc}
+  - Focus border auto-applies theme.global.focusBorderColor
 - **Theme color references ($primary, $semantic.success, etc.)**
 - **Automatic terminal color reduction**
-- 14 tests passing (4 render + 6 event + 2 content update + 2 text width tests)
+- 14+ tests passing (render, events, content, effects, themes)
+
+**Code Quality Improvements:**
+
+- ~300+ lines of duplication eliminated through helper functions
+- Components reduced from 200+ lines to ~100 lines average
+- Single source of truth for all common patterns
+- Consistent behavior guaranteed across all widgets
 
 **📋 TODO:**
 
 - Text wrapping support
 - Yoga measure function for text
 - Hooks (useInput, useApp, useFocus)
-- More component wrappers (List, ListTable, ProgressBar, Checkbox, RadioButton, etc.)
+- More component wrappers (ListTable, ProgressBar, Checkbox, RadioButton, etc.)
 - Comprehensive integration tests
 - Performance optimization
 

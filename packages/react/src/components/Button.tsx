@@ -7,7 +7,6 @@ import { ComputedLayout } from "@unblessed/layout";
 import type { ReactNode } from "react";
 import { forwardRef, type PropsWithChildren } from "react";
 import type { InteractiveWidgetProps } from "../widget-descriptors/common-props.js";
-import { buildFocusableOptions } from "../widget-descriptors/helpers.js";
 import { BoxDescriptor, COMMON_WIDGET_OPTIONS } from "./Box";
 
 /**
@@ -24,18 +23,6 @@ export interface ButtonProps extends InteractiveWidgetProps {
  */
 export class ButtonDescriptor extends BoxDescriptor<ButtonProps> {
   override readonly type = "button";
-
-  override get widgetOptions() {
-    const options = super.widgetOptions;
-
-    // Build focusable options using helper function
-    Object.assign(options, buildFocusableOptions(this.props, 0));
-
-    // Button-specific options
-    if (this.props.content !== undefined) options.content = this.props.content;
-
-    return options;
-  }
 
   override get eventHandlers() {
     const handlers: Record<string, Function> = super.eventHandlers;
@@ -61,11 +48,19 @@ export class ButtonDescriptor extends BoxDescriptor<ButtonProps> {
  *
  * Supports mouse clicks, keyboard press (Enter), and visual state changes.
  * Automatically receives focus when tabbed to.
+ * Automatically applies theme defaults for colors and border style.
  *
  * Default state styling uses direct props (color, bg, bold, etc.)
  * State variations use nested objects (hover, focus)
  *
- * @example Basic button
+ * @example Basic button with theme defaults
+ * ```tsx
+ * <Button onClick={() => console.log('Clicked!')}>
+ *   Click Me
+ * </Button>
+ * ```
+ *
+ * @example With custom colors (overrides theme)
  * ```tsx
  * <Button
  *   borderStyle="single"
@@ -80,11 +75,6 @@ export class ButtonDescriptor extends BoxDescriptor<ButtonProps> {
  * @example With hover and focus effects
  * ```tsx
  * <Button
- *   borderStyle="single"
- *   borderColor="blue"
- *   color="white"
- *   bg="blue"
- *   bold={true}
  *   hover={{ bg: "darkblue" }}
  *   focus={{ border: { color: "cyan" } }}
  *   padding={1}
@@ -93,20 +83,19 @@ export class ButtonDescriptor extends BoxDescriptor<ButtonProps> {
  *   Submit
  * </Button>
  * ```
- *
- * @example Interactive counter
- * ```tsx
- * const [count, setCount] = useState(0);
- *
- * <Button onClick={() => setCount(c => c + 1)}>
- *   Count: {count}
- * </Button>
- * ```
  */
 export const Button = forwardRef<any, PropsWithChildren<ButtonProps>>(
   ({ children, ...props }, ref) => {
     return (
-      <tbutton ref={ref} border={1} minHeight={3} {...props}>
+      <tbutton
+        ref={ref}
+        tabIndex={0}
+        border={1}
+        minHeight={3}
+        alignItems="center"
+        justifyContent="center"
+        {...props}
+      >
         {children}
       </tbutton>
     );

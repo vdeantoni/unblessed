@@ -14,6 +14,7 @@
  */
 
 import type { Element, Screen } from "@unblessed/core";
+import { merge } from "lodash-es";
 import { ComputedLayout, FlexboxProps } from "./types";
 
 /**
@@ -36,9 +37,9 @@ export abstract class WidgetDescriptor<TProps = any, TTheme = any> {
   abstract readonly type: string;
 
   /**
-   * Theme instance (available to subclasses for color resolution)
+   * Theme instance (public for helper functions to access)
    */
-  protected theme: TTheme;
+  public readonly theme: TTheme;
 
   /**
    * Constructor stores the props and theme
@@ -112,12 +113,25 @@ export abstract class WidgetDescriptor<TProps = any, TTheme = any> {
     const hasActiveEffects = hoverTemp || focusTemp;
 
     if (hasActiveEffects) {
-      // Effects are active - preserve style, update everything else
+      // Effects are active - update everything EXCEPT style
+      // (preserving active hover/focus styling)
       const { style, hoverEffects, focusEffects, ...otherOptions } = options;
 
-      // Deep clone other options to avoid shared references
-      const safeOptions = this.deepCloneOptions(otherOptions);
-      Object.assign(widget, safeOptions);
+      // Use merge for deep nested object updates
+      merge(widget, otherOptions);
+
+      // CRITICAL: Update border color even when effects are active
+      // Border color must be updated immediately for theme changes to work
+      // We update both widget.border.fg AND widget.style.border.fg
+      if (options.border?.fg !== undefined) {
+        widget.border = widget.border || {};
+        widget.border.fg = options.border.fg;
+
+        // Also update style.border.fg where unblessed reads it from
+        widget.style = widget.style || {};
+        widget.style.border = widget.style.border || {};
+        widget.style.border.fg = options.border.fg;
+      }
 
       // Update the temp storage to reflect new base style values
       // This ensures when mouseout/blur happens, we restore to the NEW base
@@ -128,9 +142,8 @@ export abstract class WidgetDescriptor<TProps = any, TTheme = any> {
         this.updateTempFromNewBase(focusTemp, style, focusEffects);
       }
     } else {
-      // No active effects - normal update with deep clone
-      const safeOptions = this.deepCloneOptions(options);
-      Object.assign(widget, safeOptions);
+      // No active effects - normal deep merge update
+      merge(widget, options);
     }
   }
 
@@ -164,34 +177,5 @@ export abstract class WidgetDescriptor<TProps = any, TTheme = any> {
         temp[key] = newBaseStyle[key];
       }
     });
-  }
-
-  /**
-   * Deep clone options to avoid mutating shared object references.
-   *
-   * @param options - Options object to clone
-   * @returns Deep cloned options object
-   */
-  private deepCloneOptions(options: any): any {
-    if (!options || typeof options !== "object") {
-      return options;
-    }
-
-    const cloned: any = {};
-
-    for (const key in options) {
-      if (options.hasOwnProperty(key)) {
-        const val = options[key];
-
-        if (val !== null && typeof val === "object" && !Array.isArray(val)) {
-          // Recursively clone nested objects
-          cloned[key] = this.deepCloneOptions(val);
-        } else {
-          cloned[key] = val;
-        }
-      }
-    }
-
-    return cloned;
   }
 }

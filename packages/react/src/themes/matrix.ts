@@ -6,7 +6,7 @@
  * Perfect for terminal animations and the Matrix rain effect.
  */
 
-import type { Theme } from "../theme.js";
+import type { Theme } from "./theme.js";
 
 export const matrixTheme: Theme = {
   name: "matrix",
@@ -151,61 +151,52 @@ export const matrixTheme: Theme = {
     error: "#a54242",
     info: "#00ffff",
     border: "#006600",
-    borderFocus: "#00ff00",
-    borderHover: "#009900",
-    shadow: "#000000",
-    hover: "#001100",
     focus: "#00cc00",
-    active: "#00dd00",
-    disabled: "#004400",
-    selection: "#009900",
-    selectionForeground: "#00ff00",
+    shadow: "#000000",
+  },
+
+  global: {
+    // Text defaults (Matrix green everywhere)
+    fg: "$semantic.foreground",
+    bg: "transparent",
+
+    // Border defaults (all green!)
+    borderStyle: "classic",
+    borderColor: "$semantic.border",
+
+    focusBorderColor: "$semantic.focus",
   },
 
   components: {
     box: {
-      bg: "transparent",
-      fg: "$semantic.foreground",
-      border: "$semantic.border",
+      // Inherits all from global (green theme)
     },
 
     button: {
-      bg: "$semantic.primary",
-      fg: "#000000", // Black text on bright green
-      border: "$semantic.primary",
-      bgHover: "$primitives.green.600",
-      bgActive: "$primitives.green.700",
-      bgDisabled: "$semantic.disabled",
+      // Black text on bright green background
+      // Inherits borderStyle, borderColor from global
     },
 
     input: {
-      bg: "#001100", // Very dark green background
-      fg: "$semantic.foreground",
-      border: "$semantic.border",
-      borderFocus: "$semantic.borderFocus",
-      placeholder: "$semantic.muted",
+      // Very dark green background
+      // Inherits fg, border, borderStyle, borderFocus from global
     },
 
     text: {
-      fg: "$semantic.foreground",
-      fgMuted: "$semantic.muted",
+      // Inherits fg from global
+    },
+
+    bigtext: {
+      // Inherits fg from global (bright Matrix green)
     },
 
     list: {
-      bg: "transparent",
-      fg: "$semantic.foreground",
-      selected: "$semantic.selection",
-      selectedFg: "$semantic.selectionForeground",
-      item: {
-        hover: "$semantic.hover",
-        hoverFg: "$semantic.foreground",
-      },
+      // Inherits all from global
     },
 
     progressBar: {
-      bg: "#002200", // Dark green background
-      fg: "$semantic.foreground",
-      bar: "$semantic.primary",
+      // Dark green background for progress
+      // Inherits fg, bar, border, borderStyle from global
     },
 
     scrollbar: {

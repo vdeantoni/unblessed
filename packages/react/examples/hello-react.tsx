@@ -17,6 +17,7 @@
  *   node --import tsx --no-warnings hello-react.tsx
  */
 import { NodeRuntime } from "@unblessed/node";
+import * as React from "react";
 import {
   BigText,
   Box,
@@ -26,10 +27,9 @@ import {
   render,
   Spacer,
   Text,
-  unblessedTheme,
 } from "../dist/index.js";
 
-const App = () => {
+const App: React.FC = () => {
   return (
     <Box
       flexDirection="column"
@@ -48,24 +48,9 @@ const App = () => {
       </Box>
 
       {/* Header with input */}
-      <Box
-        flexDirection="column"
-        padding={1}
-        border={1}
-        borderColor="$semantic.border"
-        gap={1}
-        minHeight={8}
-      >
-        <Input
-          border={1}
-          borderColor="$primary"
-          padding={1}
-          tabIndex={0}
-          minHeight={5}
-        />
-        <Text color="$semantic.foreground">
-          @unblessed/react Border Showcase
-        </Text>
+      <Box flexDirection="column" padding={1} border={1} gap={1} minHeight={10}>
+        <Input />
+        <Text color="$semantic.primary">@unblessed/react Border Showcase</Text>
       </Box>
 
       {/* Border styles */}
@@ -73,7 +58,6 @@ const App = () => {
         <Box
           width={18}
           border={1}
-          borderColor="$semantic.border"
           padding={1}
           hover={{ border: { color: "green", dim: true } }}
           minHeight={5}
@@ -141,33 +125,15 @@ const App = () => {
       </Box>
 
       {/* Flexbox with borders and spacer */}
-      <Box flexDirection="row" gap={1} minHeight={12}>
-        <Box width={20} border={1} borderColor="$primary" minHeight={10}>
-          <Button
-            hover={{ bg: "red" }}
-            focus={{ border: { fg: "yellow" } }}
-            tabIndex={1}
-          >
-            {"{center}LEFT{/center}"}
-          </Button>
+      <Box flexDirection="row" gap={1}>
+        <Box width={20}>
+          <Button>{"{center}LEFT{/center}"}</Button>
         </Box>
 
         <Spacer />
 
-        <Box
-          width={30}
-          flexDirection="column"
-          border={1}
-          borderStyle="single"
-          borderColor="$primary"
-          minHeight={10}
-        >
-          <List
-            label="This is rad!"
-            items={["Oi", "Tchau"]}
-            height={10}
-            tabIndex={2}
-          />
+        <Box width={30} flexDirection="column">
+          <List label="This is rad!" items={["Oi", "Tchau"]} />
         </Box>
       </Box>
 
@@ -179,13 +145,7 @@ const App = () => {
         padding={1}
         minHeight={7}
       >
-        <Box
-          border={1}
-          borderStyle="single"
-          borderColor="cyan"
-          padding={1}
-          minHeight={3}
-        >
+        <Box border={1} borderStyle="single" borderColor="cyan" padding={1}>
           <Text>Nested borders (double outer, single inner)</Text>
         </Box>
       </Box>
@@ -210,6 +170,5 @@ const App = () => {
 // Render with unblessed theme
 render(<App />, {
   runtime: new NodeRuntime(),
-  theme: unblessedTheme,
   debug: false,
 });

@@ -24,7 +24,7 @@ import {
   type TextNode,
   updateNodeProps,
 } from "./dom.js";
-import { getCurrentTheme } from "./theme-registry.js";
+import { getCurrentTheme } from "./themes/theme-registry.js";
 import { createDescriptor } from "./widget-descriptors";
 
 type Props = Record<string, unknown>;

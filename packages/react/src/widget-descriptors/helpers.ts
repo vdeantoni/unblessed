@@ -6,8 +6,10 @@
  */
 
 import { colors } from "@unblessed/core";
-import { resolveColor } from "../theme-utils.js";
-import type { Theme } from "../theme.js";
+import type { FlexboxProps } from "@unblessed/layout";
+import { merge } from "lodash-es";
+import { resolveColor } from "../themes/theme-utils.js";
+import type { Theme } from "../themes/theme.js";
 import type {
   BorderProps,
   BorderStyleObject,
@@ -16,7 +18,17 @@ import type {
 } from "./common-props.js";
 
 /**
- * Props that include border numbers (for Yoga)
+ * Descriptor interface for helpers.
+ * Defines the minimum properties helpers need from a descriptor.
+ */
+export interface DescriptorLike {
+  props: any;
+  theme: Theme;
+  type: string;
+}
+
+/**
+ * Props that include border numbers (for Yoga layout)
  */
 interface BorderNumberProps {
   border?: number;
@@ -27,19 +39,237 @@ interface BorderNumberProps {
 }
 
 /**
- * Builds border configuration from BorderProps
- * IMPORTANT: Only creates border if Yoga knows about it (border numbers are set)
+ * Gets component defaults by merging global and component-specific theme defaults.
+ * Global defaults are applied first, then overridden by component-specific defaults.
  *
- * @param props - Props with border configuration
- * @param theme - Theme for color resolution
- * @returns Border object or null if no border numbers are set
+ * @param descriptor - Descriptor instance with type and theme
+ * @returns Merged defaults (global → component)
  */
-export function buildBorder(
-  props: BorderProps & BorderNumberProps,
-  theme: Theme,
-): any | null {
-  // Only create border if Yoga knows about it (has border numbers)
-  // This prevents creating borders that Yoga doesn't reserve space for
+export function getComponentDefaults(descriptor: DescriptorLike): any {
+  const componentKey =
+    descriptor.type as keyof typeof descriptor.theme.components;
+  return merge(
+    {},
+    descriptor.theme.global,
+    descriptor.theme.components[componentKey],
+  );
+}
+
+/**
+ * Extracts all defined flexbox properties from props.
+ * Handles the common pattern of checking 40+ flexbox props and only including defined ones.
+ *
+ * @param props - Component props
+ * @returns FlexboxProps with only defined properties
+ */
+export function extractFlexboxProps(props: any): FlexboxProps {
+  const flexboxProps: FlexboxProps = {};
+
+  // Layout properties
+  if (props.flexGrow !== undefined) flexboxProps.flexGrow = props.flexGrow;
+  if (props.flexShrink !== undefined)
+    flexboxProps.flexShrink = props.flexShrink;
+  if (props.flexBasis !== undefined) flexboxProps.flexBasis = props.flexBasis;
+  if (props.flexDirection !== undefined)
+    flexboxProps.flexDirection = props.flexDirection;
+  if (props.flexWrap !== undefined) flexboxProps.flexWrap = props.flexWrap;
+  if (props.justifyContent !== undefined)
+    flexboxProps.justifyContent = props.justifyContent;
+  if (props.alignItems !== undefined)
+    flexboxProps.alignItems = props.alignItems;
+  if (props.alignSelf !== undefined) flexboxProps.alignSelf = props.alignSelf;
+
+  // Dimensions
+  if (props.width !== undefined) flexboxProps.width = props.width;
+  if (props.height !== undefined) flexboxProps.height = props.height;
+  if (props.minWidth !== undefined) flexboxProps.minWidth = props.minWidth;
+  if (props.minHeight !== undefined) flexboxProps.minHeight = props.minHeight;
+  if (props.maxWidth !== undefined) flexboxProps.maxWidth = props.maxWidth;
+  if (props.maxHeight !== undefined) flexboxProps.maxHeight = props.maxHeight;
+
+  // Padding
+  if (props.padding !== undefined) flexboxProps.padding = props.padding;
+  if (props.paddingX !== undefined) flexboxProps.paddingX = props.paddingX;
+  if (props.paddingY !== undefined) flexboxProps.paddingY = props.paddingY;
+  if (props.paddingTop !== undefined)
+    flexboxProps.paddingTop = props.paddingTop;
+  if (props.paddingBottom !== undefined)
+    flexboxProps.paddingBottom = props.paddingBottom;
+  if (props.paddingLeft !== undefined)
+    flexboxProps.paddingLeft = props.paddingLeft;
+  if (props.paddingRight !== undefined)
+    flexboxProps.paddingRight = props.paddingRight;
+
+  // Borders (for Yoga layout - 1 means reserve space, 0 means no space)
+  if (props.border !== undefined) flexboxProps.border = props.border ? 1 : 0;
+  if (props.borderTop !== undefined) flexboxProps.borderTop = props.borderTop;
+  if (props.borderBottom !== undefined)
+    flexboxProps.borderBottom = props.borderBottom;
+  if (props.borderLeft !== undefined)
+    flexboxProps.borderLeft = props.borderLeft;
+  if (props.borderRight !== undefined)
+    flexboxProps.borderRight = props.borderRight;
+
+  // Margin
+  if (props.margin !== undefined) flexboxProps.margin = props.margin;
+  if (props.marginX !== undefined) flexboxProps.marginX = props.marginX;
+  if (props.marginY !== undefined) flexboxProps.marginY = props.marginY;
+  if (props.marginTop !== undefined) flexboxProps.marginTop = props.marginTop;
+  if (props.marginBottom !== undefined)
+    flexboxProps.marginBottom = props.marginBottom;
+  if (props.marginLeft !== undefined)
+    flexboxProps.marginLeft = props.marginLeft;
+  if (props.marginRight !== undefined)
+    flexboxProps.marginRight = props.marginRight;
+
+  // Gap
+  if (props.gap !== undefined) flexboxProps.gap = props.gap;
+  if (props.rowGap !== undefined) flexboxProps.rowGap = props.rowGap;
+  if (props.columnGap !== undefined) flexboxProps.columnGap = props.columnGap;
+
+  // Position
+  if (props.position !== undefined) flexboxProps.position = props.position;
+  if (props.display !== undefined) flexboxProps.display = props.display;
+
+  return flexboxProps;
+}
+
+/**
+ * Extracts event handlers from props and maps them to unblessed event names.
+ * Handles the common pattern of mapping React event props to widget events.
+ *
+ * @param props - Component props
+ * @returns Record of event name to handler function
+ */
+export function extractEventHandlers(props: any): Record<string, Function> {
+  const handlers: Record<string, Function> = {};
+
+  // Mouse events
+  if (props.onClick) handlers.click = props.onClick;
+  if (props.onMouseDown) handlers.mousedown = props.onMouseDown;
+  if (props.onMouseUp) handlers.mouseup = props.onMouseUp;
+  if (props.onMouseMove) handlers.mousemove = props.onMouseMove;
+  if (props.onMouseOver) handlers.mouseover = props.onMouseOver;
+  if (props.onMouseOut) handlers.mouseout = props.onMouseOut;
+  if (props.onMouseWheel) handlers.mousewheel = props.onMouseWheel;
+  if (props.onWheelDown) handlers.wheeldown = props.onWheelDown;
+  if (props.onWheelUp) handlers.wheelup = props.onWheelUp;
+
+  // Keyboard events
+  if (props.onKeyPress) handlers.keypress = props.onKeyPress;
+
+  // Focus events
+  if (props.onFocus) handlers.focus = props.onFocus;
+  if (props.onBlur) handlers.blur = props.onBlur;
+
+  return handlers;
+}
+
+/**
+ * Builds List item styling options with theme fallback.
+ * Handles the pattern of: use prop style OR theme defaults, then map to option names.
+ *
+ * @param descriptor - Descriptor instance
+ * @param propStyle - Style object from props (itemStyle, itemSelected, or itemHover)
+ * @param themeDefaults - Theme defaults for this item type (defaults.item)
+ * @param config - Configuration for mapping style to options
+ * @returns Options object with mapped style properties
+ */
+export function buildItemStyles(
+  descriptor: DescriptorLike,
+  propStyle: StyleObject | undefined,
+  themeDefaults: any | undefined,
+  config: {
+    optionPrefix: string; // 'item', 'selected', 'itemHover'
+    isEffects?: boolean; // If true, builds effects object instead of flat props
+    themeFgKey?: string; // Key for theme fg (e.g., 'fg', 'selectedFg', 'hoverFg')
+    themeBgKey?: string; // Key for theme bg
+  },
+): Record<string, any> {
+  const options: Record<string, any> = {};
+
+  if (propStyle) {
+    // Use user-provided style
+    const style = buildStyleObject(descriptor, propStyle);
+
+    if (config.isEffects) {
+      // Build effects object (for hover)
+      const effects: any = {};
+      if (style.fg !== undefined) effects.fg = style.fg;
+      if (style.bg !== undefined) effects.bg = style.bg;
+      if (Object.keys(effects).length > 0) {
+        options[`${config.optionPrefix}Effects`] = effects;
+      }
+    } else {
+      // Map to flat option properties
+      if (style.fg !== undefined)
+        options[`${config.optionPrefix}Fg`] = style.fg;
+      if (style.bg !== undefined)
+        options[`${config.optionPrefix}Bg`] = style.bg;
+      if (style.bold !== undefined)
+        options[`${config.optionPrefix}Bold`] = style.bold;
+      if (style.underline !== undefined)
+        options[`${config.optionPrefix}Underline`] = style.underline;
+      if (style.blink !== undefined)
+        options[`${config.optionPrefix}Blink`] = style.blink;
+      if (style.inverse !== undefined)
+        options[`${config.optionPrefix}Inverse`] = style.inverse;
+    }
+  } else if (themeDefaults) {
+    // Use theme defaults
+    if (config.isEffects) {
+      // Build effects object from theme
+      const effects: any = {};
+      if (config.themeFgKey && themeDefaults[config.themeFgKey] !== undefined) {
+        const resolved = resolveColor(
+          themeDefaults[config.themeFgKey],
+          descriptor.theme,
+        );
+        effects.fg = colors.convert(resolved);
+      }
+      if (config.themeBgKey && themeDefaults[config.themeBgKey] !== undefined) {
+        const resolved = resolveColor(
+          themeDefaults[config.themeBgKey],
+          descriptor.theme,
+        );
+        effects.bg = colors.convert(resolved);
+      }
+      if (Object.keys(effects).length > 0) {
+        options[`${config.optionPrefix}Effects`] = effects;
+      }
+    } else {
+      // Map flat theme properties
+      if (config.themeFgKey && themeDefaults[config.themeFgKey] !== undefined) {
+        const resolved = resolveColor(
+          themeDefaults[config.themeFgKey],
+          descriptor.theme,
+        );
+        options[`${config.optionPrefix}Fg`] = colors.convert(resolved);
+      }
+      if (config.themeBgKey && themeDefaults[config.themeBgKey] !== undefined) {
+        const resolved = resolveColor(
+          themeDefaults[config.themeBgKey],
+          descriptor.theme,
+        );
+        options[`${config.optionPrefix}Bg`] = colors.convert(resolved);
+      }
+    }
+  }
+
+  return options;
+}
+
+/**
+ * Builds border configuration from descriptor props.
+ * Only creates border if Yoga knows about it (border numbers are set).
+ *
+ * @param descriptor - Descriptor instance
+ * @returns Border object or null if no border
+ */
+export function buildBorder(descriptor: DescriptorLike): any | null {
+  const props = descriptor.props as BorderProps & BorderNumberProps;
+
+  // Only create border if Yoga knows about it
   if (
     !Number(props.border) &&
     !Number(props.borderTop) &&
@@ -50,134 +280,122 @@ export function buildBorder(
     return null;
   }
 
+  const defaults = getComponentDefaults(descriptor);
+
   const border: any = {
     type: "line",
-    style: props.borderStyle || "single",
+    style: props.borderStyle || defaults.borderStyle || "single",
+    top: props.borderTop !== undefined ? Number(props.borderTop) > 0 : true,
+    bottom:
+      props.borderBottom !== undefined ? Number(props.borderBottom) > 0 : true,
+    left: props.borderLeft !== undefined ? Number(props.borderLeft) > 0 : true,
+    right:
+      props.borderRight !== undefined ? Number(props.borderRight) > 0 : true,
   };
 
-  // Per-side visibility
-  border.top =
-    props.borderTop !== undefined ? Number(props.borderTop) > 0 : true;
-  border.bottom =
-    props.borderBottom !== undefined ? Number(props.borderBottom) > 0 : true;
-  border.left =
-    props.borderLeft !== undefined ? Number(props.borderLeft) > 0 : true;
-  border.right =
-    props.borderRight !== undefined ? Number(props.borderRight) > 0 : true;
-
-  // Border color (global or per-side) - resolve from theme
+  // Main border color
   if (props.borderColor) {
-    const resolved = resolveColor(props.borderColor, theme);
-    border.fg = colors.convert(resolved);
+    border.fg = colors.convert(
+      resolveColor(props.borderColor, descriptor.theme),
+    );
+  } else if (defaults.borderColor) {
+    border.fg = colors.convert(
+      resolveColor(defaults.borderColor, descriptor.theme),
+    );
   }
 
+  // Per-side colors
   if (props.borderTopColor) {
-    const resolved = resolveColor(props.borderTopColor, theme);
-    border.topColor = colors.convert(resolved);
+    border.topColor = colors.convert(
+      resolveColor(props.borderTopColor, descriptor.theme),
+    );
   }
   if (props.borderBottomColor) {
-    const resolved = resolveColor(props.borderBottomColor, theme);
-    border.bottomColor = colors.convert(resolved);
+    border.bottomColor = colors.convert(
+      resolveColor(props.borderBottomColor, descriptor.theme),
+    );
   }
   if (props.borderLeftColor) {
-    const resolved = resolveColor(props.borderLeftColor, theme);
-    border.leftColor = colors.convert(resolved);
+    border.leftColor = colors.convert(
+      resolveColor(props.borderLeftColor, descriptor.theme),
+    );
   }
   if (props.borderRightColor) {
-    const resolved = resolveColor(props.borderRightColor, theme);
-    border.rightColor = colors.convert(resolved);
+    border.rightColor = colors.convert(
+      resolveColor(props.borderRightColor, descriptor.theme),
+    );
   }
 
-  // Border dim (global or per-side)
-  if (props.borderDimColor !== undefined) {
-    border.dim = props.borderDimColor;
-  }
-
-  if (props.borderTopDim !== undefined) {
+  // Dim properties
+  if (props.borderDimColor !== undefined) border.dim = props.borderDimColor;
+  if (props.borderTopDim !== undefined)
     border.borderTopDim = props.borderTopDim;
-  }
-  if (props.borderBottomDim !== undefined) {
+  if (props.borderBottomDim !== undefined)
     border.borderBottomDim = props.borderBottomDim;
-  }
-  if (props.borderLeftDim !== undefined) {
+  if (props.borderLeftDim !== undefined)
     border.borderLeftDim = props.borderLeftDim;
-  }
-  if (props.borderRightDim !== undefined) {
+  if (props.borderRightDim !== undefined)
     border.borderRightDim = props.borderRightDim;
-  }
 
   return border;
 }
 
 /**
- * Pre-populates style.border.fg for unblessed compatibility
+ * Initializes border and style.border for widget options.
+ * Handles border creation, style.border.fg pre-population, and ensures
+ * style.border exists when hover/focus effects need it.
  *
- * @param border - Border configuration object
- * @returns Style object with border.fg set, or empty object if no border
+ * @param descriptor - Descriptor instance
+ * @param hasHoverBorder - Whether hover effects include border styling
+ * @param hasFocusBorder - Whether focus effects include border styling
+ * @returns Object with border and style properties
  */
-export function prepareBorderStyle(border: any): any {
-  if (!border) return {};
-
-  return {
-    border: {
-      fg: border.fg,
-    },
-  };
-}
-
-/**
- * Builds text style object from TextStyleProps
- *
- * @param props - Props with text styling
- * @param theme - Theme for color resolution
- * @returns Style object or null if no text styles are set
- */
-export function buildTextStyles(props: StyleObject, theme: Theme): any | null {
-  if (
-    !props.color &&
-    !props.backgroundColor &&
-    !props.bold &&
-    !props.italic &&
-    !props.underline &&
-    !props.strikethrough &&
-    !props.reverse &&
-    !props.blink &&
-    !props.hide &&
-    !props.dim
-  ) {
-    return null;
-  }
-
+export function initializeBorderStyle(
+  descriptor: DescriptorLike,
+  hasHoverBorder: boolean = false,
+  hasFocusBorder: boolean = false,
+): { border?: any; style: any } {
+  const border = buildBorder(descriptor);
   const style: any = {};
 
-  if (props.color) {
-    const resolved = resolveColor(props.color, theme);
-    style.fg = colors.convert(resolved);
+  // Pre-populate style.border.fg for unblessed compatibility
+  if (border?.fg !== undefined) {
+    style.border = { fg: border.fg };
   }
-  if (props.backgroundColor) {
-    const resolved = resolveColor(props.backgroundColor, theme);
-    style.bg = colors.convert(resolved);
-  }
-  if (props.bold) style.bold = true;
-  if (props.italic) style.italic = true;
-  if (props.underline) style.underline = true;
-  if (props.strikethrough) style.strikethrough = true;
-  if (props.reverse) style.inverse = true;
-  if (props.blink) style.blink = true;
-  if (props.hide) style.invisible = true;
-  if (props.dim) style.dim = true;
 
-  return style;
+  // Ensure style.border exists if effects use borders
+  if (hasHoverBorder || hasFocusBorder) {
+    style.border = style.border || {};
+  }
+
+  return { border, style };
 }
 
 /**
- * Builds focusable widget options
+ * Builds text style object from descriptor props.
+ * Wrapper around buildStyleObject that allows overriding the component type
+ * for theme lookups.
  *
- * **IMPORTANT**: For focus effects to work, elements must be keyable.
- * This ensures they receive focus/blur events from the screen.
+ * @param descriptor - Descriptor instance
+ * @param componentType - Override for component type (defaults to descriptor.type)
+ * @returns Style object or null
+ */
+export function buildTextStyles(
+  descriptor: DescriptorLike,
+  componentType?: string,
+): any | null {
+  const descriptorForTheme = componentType
+    ? { ...descriptor, type: componentType }
+    : descriptor;
+  return buildStyleObject(descriptorForTheme);
+}
+
+/**
+ * Builds focusable widget options.
+ * Sets tabIndex and enables keyable/clickable for focus support.
  *
  * @param props - Props with focus configuration
- * @param defaultTabIndex - Default tabIndex value if not provided (typically 0 for interactive widgets, undefined for non-interactive)
+ * @param defaultTabIndex - Default tabIndex if not provided
  * @returns Options object with focus properties
  */
 export function buildFocusableOptions(
@@ -186,29 +404,28 @@ export function buildFocusableOptions(
 ): any {
   const options: any = {};
 
-  // Only set tabIndex if explicitly provided by user, or if we have a default to apply
   if (props.tabIndex !== undefined) {
     options.tabIndex = props.tabIndex;
   } else if (defaultTabIndex !== undefined) {
     options.tabIndex = defaultTabIndex;
   }
 
-  // CRITICAL: Set keyable=true if element has tabIndex
-  // This ensures the element receives keyboard input and focus/blur events
-  // Without this, focusEffects won't work!
+  // Enable keyable/clickable if element has tabIndex
   if (options.tabIndex !== undefined) {
-    options.keyable = true;
-    options.clickable = true;
+    if (options.tabIndex >= 0) {
+      options.keyable = true;
+      options.clickable = true;
+    }
   }
 
   return options;
 }
 
 /**
- * Merges multiple style objects, handling nested properties correctly
+ * Merges multiple style objects, handling nested border properties.
  *
- * @param styles - Array of style objects to merge
- * @returns Merged style object
+ * @param styles - Style objects to merge
+ * @returns Merged style object or null
  */
 export function mergeStyles(...styles: any[]): any {
   const merged: any = {};
@@ -218,7 +435,6 @@ export function mergeStyles(...styles: any[]): any {
 
     for (const [key, value] of Object.entries(style)) {
       if (key === "border" && merged.border) {
-        // Merge border objects
         merged.border = { ...merged.border, ...(value as any) };
       } else {
         merged[key] = value;
@@ -230,8 +446,8 @@ export function mergeStyles(...styles: any[]): any {
 }
 
 /**
- * Builds border style object from BorderStyleObject
- * Converts color names to numbers and normalizes shorthands
+ * Builds border style object from BorderStyleObject.
+ * Converts color names to numbers and normalizes shorthands.
  *
  * @param borderStyle - Border style configuration
  * @param theme - Theme for color resolution
@@ -248,32 +464,28 @@ function buildBorderStyleObject(
   const bg =
     borderStyle.bg ?? borderStyle.background ?? borderStyle.backgroundColor;
 
-  // Main colors - resolve from theme
-  if (fg) {
-    const resolved = resolveColor(fg, theme);
-    border.fg = colors.convert(resolved);
-  }
-  if (bg) {
-    const resolved = resolveColor(bg, theme);
-    border.bg = colors.convert(resolved);
-  }
+  // Main colors
+  if (fg) border.fg = colors.convert(resolveColor(fg, theme));
+  if (bg) border.bg = colors.convert(resolveColor(bg, theme));
 
-  // Per-side colors - resolve from theme
+  // Per-side colors
   if (borderStyle.topColor) {
-    const resolved = resolveColor(borderStyle.topColor, theme);
-    border.topColor = colors.convert(resolved);
+    border.topColor = colors.convert(resolveColor(borderStyle.topColor, theme));
   }
   if (borderStyle.bottomColor) {
-    const resolved = resolveColor(borderStyle.bottomColor, theme);
-    border.bottomColor = colors.convert(resolved);
+    border.bottomColor = colors.convert(
+      resolveColor(borderStyle.bottomColor, theme),
+    );
   }
   if (borderStyle.leftColor) {
-    const resolved = resolveColor(borderStyle.leftColor, theme);
-    border.leftColor = colors.convert(resolved);
+    border.leftColor = colors.convert(
+      resolveColor(borderStyle.leftColor, theme),
+    );
   }
   if (borderStyle.rightColor) {
-    const resolved = resolveColor(borderStyle.rightColor, theme);
-    border.rightColor = colors.convert(resolved);
+    border.rightColor = colors.convert(
+      resolveColor(borderStyle.rightColor, theme),
+    );
   }
 
   // Dim properties
@@ -289,58 +501,56 @@ function buildBorderStyleObject(
 }
 
 /**
- * Builds style object from StyleObject
- * Converts StyleObject (React props) to unblessed style format
- * Handles color conversion and shorthand normalization
+ * Builds style object from StyleObject.
+ * Converts React props to unblessed style format with theme resolution.
  *
- * @param styleObj - Style configuration object
- * @param theme - Theme for color resolution
+ * @param descriptor - Descriptor instance
+ * @param styleObj - Style configuration (optional, uses descriptor.props if not provided)
  * @returns Unblessed style object
  */
 export function buildStyleObject(
-  styleObj: StyleObject | undefined,
-  theme: Theme,
+  descriptor: DescriptorLike,
+  styleObj?: StyleObject,
 ): any {
-  if (!styleObj) return {};
+  const style = styleObj || (descriptor.props as StyleObject);
+  if (!style) return {};
 
-  const style: any = {};
+  const result: any = {};
+  const componentDefaults = getComponentDefaults(descriptor);
 
-  // Normalize color shorthands (priority: shorthand > full name)
-  const fg = styleObj.fg ?? styleObj.color;
-  const bg = styleObj.bg ?? styleObj.background ?? styleObj.backgroundColor;
+  // Normalize color shorthands with cascade: user prop → component → global
+  const fg = style.fg ?? style.color ?? componentDefaults.fg;
+  const bg =
+    style.bg ??
+    style.background ??
+    style.backgroundColor ??
+    componentDefaults.bg;
 
-  // Text colors - resolve from theme
-  if (fg) {
-    const resolved = resolveColor(fg, theme);
-    style.fg = colors.convert(resolved);
-  }
-  if (bg) {
-    const resolved = resolveColor(bg, theme);
-    style.bg = colors.convert(resolved);
-  }
+  // Convert colors
+  if (fg) result.fg = colors.convert(resolveColor(fg, descriptor.theme));
+  if (bg) result.bg = colors.convert(resolveColor(bg, descriptor.theme));
 
   // Text styles
-  if (styleObj.bold !== undefined) style.bold = styleObj.bold;
-  if (styleObj.italic !== undefined) style.italic = styleObj.italic;
-  if (styleObj.underline !== undefined) style.underline = styleObj.underline;
-  if (styleObj.strikethrough !== undefined)
-    style.strikethrough = styleObj.strikethrough;
-  if (styleObj.reverse !== undefined) style.inverse = styleObj.reverse;
-  if (styleObj.dim !== undefined) style.dim = styleObj.dim;
-  if (styleObj.blink !== undefined) style.blink = styleObj.blink;
-  if (styleObj.hide !== undefined) style.invisible = styleObj.hide;
+  if (style.bold !== undefined) result.bold = style.bold;
+  if (style.italic !== undefined) result.italic = style.italic;
+  if (style.underline !== undefined) result.underline = style.underline;
+  if (style.strikethrough !== undefined)
+    result.strikethrough = style.strikethrough;
+  if (style.reverse !== undefined) result.inverse = style.reverse;
+  if (style.dim !== undefined) result.dim = style.dim;
+  if (style.blink !== undefined) result.blink = style.blink;
+  if (style.hide !== undefined) result.invisible = style.hide;
 
-  // Border styling (nested) - pass theme through
-  if (styleObj.border) {
-    style.border = buildBorderStyleObject(styleObj.border, theme);
+  // Border styling
+  if (style.border) {
+    result.border = buildBorderStyleObject(style.border, descriptor.theme);
   }
 
-  return style;
+  return result;
 }
 
 /**
- * Extracts StyleObject properties from component props
- * Used to get default state styling from direct component props
+ * Extracts StyleObject properties from component props.
  *
  * @param props - Component props object
  * @returns StyleObject extracted from props
@@ -348,7 +558,7 @@ export function buildStyleObject(
 export function extractStyleProps(props: any): StyleObject {
   const styleObj: StyleObject = {};
 
-  // Extract color properties
+  // Colors
   if (props.color !== undefined) styleObj.color = props.color;
   if (props.fg !== undefined) styleObj.fg = props.fg;
   if (props.backgroundColor !== undefined)
@@ -356,7 +566,7 @@ export function extractStyleProps(props: any): StyleObject {
   if (props.bg !== undefined) styleObj.bg = props.bg;
   if (props.background !== undefined) styleObj.background = props.background;
 
-  // Extract text style properties
+  // Text styles
   if (props.bold !== undefined) styleObj.bold = props.bold;
   if (props.italic !== undefined) styleObj.italic = props.italic;
   if (props.underline !== undefined) styleObj.underline = props.underline;
@@ -367,8 +577,103 @@ export function extractStyleProps(props: any): StyleObject {
   if (props.blink !== undefined) styleObj.blink = props.blink;
   if (props.hide !== undefined) styleObj.hide = props.hide;
 
-  // Note: We don't extract border here because StyleObject.border is a BorderStyleObject,
-  // not the same as BorderProps.border (which is a number for Yoga layout)
-
   return styleObj;
+}
+
+/**
+ * Builds effects object (hover or focus) from StyleObject.
+ * Handles theme resolution, color conversion, and automatic focus border color.
+ *
+ * @param descriptor - Descriptor instance
+ * @param effectStyle - Effect state style object
+ * @returns Unblessed effects object or null
+ */
+export function buildEffects(
+  descriptor: DescriptorLike,
+  effectStyle?: StyleObject,
+): any | null {
+  const effects: any = {};
+
+  if (effectStyle) {
+    // Normalize color shorthands
+    const fg = effectStyle.fg ?? effectStyle.color;
+    const bg =
+      effectStyle.bg ?? effectStyle.background ?? effectStyle.backgroundColor;
+
+    // Convert colors
+    if (fg) effects.fg = colors.convert(resolveColor(fg, descriptor.theme));
+    if (bg) effects.bg = colors.convert(resolveColor(bg, descriptor.theme));
+
+    // Text styles
+    if (effectStyle.bold !== undefined) effects.bold = effectStyle.bold;
+    if (effectStyle.italic !== undefined) effects.italic = effectStyle.italic;
+    if (effectStyle.underline !== undefined)
+      effects.underline = effectStyle.underline;
+    if (effectStyle.strikethrough !== undefined)
+      effects.strikethrough = effectStyle.strikethrough;
+    if (effectStyle.reverse !== undefined)
+      effects.inverse = effectStyle.reverse;
+    if (effectStyle.dim !== undefined) effects.dim = effectStyle.dim;
+    if (effectStyle.blink !== undefined) effects.blink = effectStyle.blink;
+    if (effectStyle.hide !== undefined) effects.invisible = effectStyle.hide;
+
+    // Border styling
+    if (effectStyle.border) {
+      effects.border = buildBorderStyleObject(
+        effectStyle.border,
+        descriptor.theme,
+      );
+    }
+  }
+
+  return Object.keys(effects).length > 0 ? effects : null;
+}
+
+/**
+ * Builds hover effects object from StyleObject.
+ *
+ * @param descriptor - Descriptor instance
+ * @param hoverStyle - Hover state style object
+ * @returns Unblessed hoverEffects object or null
+ */
+export function buildHoverEffects(
+  descriptor: DescriptorLike,
+  hoverStyle?: StyleObject,
+): any | null {
+  return buildEffects(descriptor, hoverStyle);
+}
+
+/**
+ * Builds focus effects object from StyleObject.
+ * Always applies focusBorderColor from theme as default.
+ *
+ * @param descriptor - Descriptor instance
+ * @param focusStyle - Focus state style object
+ * @returns Unblessed focusEffects object or null
+ */
+export function buildFocusEffects(
+  descriptor: DescriptorLike,
+  focusStyle?: StyleObject,
+): any | null {
+  const effects = buildEffects(descriptor, focusStyle);
+
+  // Apply default focus border color from theme
+  if (!focusStyle?.border?.fg) {
+    const defaults = getComponentDefaults(descriptor);
+    const focusBorderColor = defaults.focusBorderColor;
+
+    if (focusBorderColor) {
+      return merge(
+        {},
+        {
+          border: {
+            fg: colors.convert(
+              resolveColor(focusBorderColor, descriptor.theme),
+            ),
+          },
+        },
+        effects,
+      );
+    }
+  }
 }

@@ -14,7 +14,8 @@ import type {
 } from "../widget-descriptors/common-props.js";
 import {
   buildFocusableOptions,
-  buildStyleObject,
+  buildItemStyles,
+  getComponentDefaults,
 } from "../widget-descriptors/helpers.js";
 import { BoxDescriptor, COMMON_WIDGET_OPTIONS } from "./Box";
 
@@ -79,15 +80,12 @@ export class ListDescriptor extends BoxDescriptor<ListProps> {
     // label
     options.label = this.props.label;
 
-    // React defaults (always enabled - users can't disable)
-    options.mouse = true;
-    options.keys = true;
-    options.tags = true;
-    options.inputOnFocus = true;
-
     // User-controlled behavior
     options.interactive = !this.props.disabled; // disabled is more intuitive
     options.vi = this.props.vi ?? false;
+
+    // Apply theme defaults for list item styles
+    const defaults = getComponentDefaults(this);
 
     // Build scrollbar configuration
     if (this.props.scrollbar !== false) {
@@ -110,43 +108,36 @@ export class ListDescriptor extends BoxDescriptor<ListProps> {
       }
     }
 
-    // Selected item styling
-    if (this.props.itemSelected) {
-      const selectedStyle = buildStyleObject(
-        this.props.itemSelected,
-        this.theme,
-      );
-      if (selectedStyle.fg !== undefined) options.selectedFg = selectedStyle.fg;
-      if (selectedStyle.bg !== undefined) options.selectedBg = selectedStyle.bg;
-      if (selectedStyle.bold !== undefined)
-        options.selectedBold = selectedStyle.bold;
-      if (selectedStyle.underline !== undefined)
-        options.selectedUnderline = selectedStyle.underline;
-      if (selectedStyle.blink !== undefined)
-        options.selectedBlink = selectedStyle.blink;
-      if (selectedStyle.inverse !== undefined)
-        options.selectedInverse = selectedStyle.reverse;
-    }
+    // Selected item styling - use helper with theme fallback
+    Object.assign(
+      options,
+      buildItemStyles(this, this.props.itemSelected, defaults.item, {
+        optionPrefix: "selected",
+        themeFgKey: "selectedFg",
+        themeBgKey: "selectedBg",
+      }),
+    );
 
-    // Normal item styling
-    if (this.props.itemStyle) {
-      const itemStyleObj = buildStyleObject(this.props.itemStyle, this.theme);
-      if (itemStyleObj.fg !== undefined) options.itemFg = itemStyleObj.fg;
-      if (itemStyleObj.bg !== undefined) options.itemBg = itemStyleObj.bg;
-      if (itemStyleObj.bold !== undefined) options.itemBold = itemStyleObj.bold;
-      if (itemStyleObj.underline !== undefined)
-        options.itemUnderline = itemStyleObj.underline;
-      if (itemStyleObj.blink !== undefined)
-        options.itemBlink = itemStyleObj.blink;
-      if (itemStyleObj.inverse !== undefined)
-        options.itemInverse = itemStyleObj.reverse;
-    }
+    // Normal item styling - use helper with theme fallback
+    Object.assign(
+      options,
+      buildItemStyles(this, this.props.itemStyle, defaults.item, {
+        optionPrefix: "item",
+        themeFgKey: "fg",
+        themeBgKey: "bg",
+      }),
+    );
 
-    // Item hover styling
-    if (this.props.itemHover) {
-      const hoverStyle = buildStyleObject(this.props.itemHover, this.theme);
-      if (hoverStyle.bg !== undefined) options.itemHoverBg = hoverStyle.bg;
-    }
+    // Item hover styling - use helper with effects object
+    Object.assign(
+      options,
+      buildItemStyles(this, this.props.itemHover, defaults.item, {
+        optionPrefix: "itemHover",
+        isEffects: true,
+        themeFgKey: "hoverFg",
+        themeBgKey: "hoverBg",
+      }),
+    );
 
     return options;
   }
@@ -188,61 +179,36 @@ export class ListDescriptor extends BoxDescriptor<ListProps> {
  *
  * Provides a simplified API with better defaults than raw unblessed List.
  * Mouse, keyboard, and tags are always enabled.
+ * Automatically applies theme defaults for colors, borders, and item styling.
  *
  * Styling hierarchy:
  * - style, hover, focus: Affect the List container (borders, background)
  * - itemStyle, itemSelected, itemHover: Affect individual list items
  *
- * @example Basic list
+ * @example Basic list with theme defaults
  * ```tsx
  * <List
  *   items={['Apple', 'Banana', 'Cherry']}
  *   label="Choose a fruit"
  *   width={40}
  *   height={10}
- *   border={1}
- *   borderStyle="single"
- *   itemSelected={{ bg: "blue", color: "white" }}
  *   onSelect={(item, index) => console.log('Selected:', item)}
  * />
  * ```
  *
- * @example With list container and item styling
+ * @example With custom item styling (overrides theme)
  * ```tsx
  * <List
  *   items={items}
  *   label="Select an option"
- *   border={1}
- *   borderStyle="single"
- *   borderColor="white"
- *   hover={{ border: { color: "cyan" } }}          // List border on hover
- *   focus={{ border: { color: "yellow" } }}        // List border on focus
- *   itemStyle={{ color: "gray" }}                  // Normal items
- *   itemSelected={{ bg: "white", color: "black", bold: true }}  // Selected item
- *   itemHover={{ bg: "darkgray" }}                 // Hovered item
- * />
- * ```
- *
- * @example Disabled list (read-only)
- * ```tsx
- * <List
- *   items={items}
- *   label="Read only"
- *   disabled={true}
  *   itemStyle={{ color: "gray" }}
+ *   itemSelected={{ bg: "cyan", color: "black", bold: true }}
+ *   itemHover={{ bg: "darkgray" }}
  * />
  * ```
  */
 export const List = forwardRef<any, ListProps>(({ ...props }, ref) => {
-  return (
-    <list
-      ref={ref}
-      border={1}
-      minHeight={5}
-      itemSelected={{ bg: "white", color: "black" }}
-      {...props}
-    />
-  );
+  return <list ref={ref} border={1} minHeight={5} {...props} />;
 });
 
 List.displayName = "List";

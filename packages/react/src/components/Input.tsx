@@ -6,7 +6,6 @@ import { type Screen, Textbox } from "@unblessed/core";
 import { ComputedLayout } from "@unblessed/layout";
 import { forwardRef } from "react";
 import type { InteractiveWidgetProps } from "../widget-descriptors/common-props.js";
-import { buildFocusableOptions } from "../widget-descriptors/helpers.js";
 import { BoxDescriptor, COMMON_WIDGET_OPTIONS } from "./Box";
 
 /**
@@ -29,9 +28,6 @@ export class InputDescriptor extends BoxDescriptor<InputProps> {
   override get widgetOptions() {
     const options: any = super.widgetOptions;
 
-    // Build focusable options using helper function
-    Object.assign(options, buildFocusableOptions(this.props, 0));
-
     // Input value: controlled (value) or uncontrolled (defaultValue)
     // In controlled mode, value is managed externally
     // In uncontrolled mode, defaultValue sets initial value only
@@ -45,7 +41,7 @@ export class InputDescriptor extends BoxDescriptor<InputProps> {
   }
 
   override get eventHandlers() {
-    const handlers: Record<string, Function> = {};
+    const handlers: Record<string, Function> = super.eventHandlers;
     if (this.props.onSubmit) handlers.submit = this.props.onSubmit;
     if (this.props.onCancel) handlers.cancel = this.props.onCancel;
     return handlers;
@@ -82,21 +78,25 @@ export class InputDescriptor extends BoxDescriptor<InputProps> {
  * Provides a single-line text input with submit/cancel events.
  * Users can type text and submit with Enter or cancel with Escape.
  * Automatically receives focus when tabbed to (tabIndex=0 by default).
+ * Automatically applies theme defaults for colors, borders, and focus effects.
  *
  * Supports both controlled and uncontrolled modes:
  * - Controlled: Provide `value` prop and update it via events
  * - Uncontrolled: Use `defaultValue` for initial value, or omit for empty input
  *
- * Default state styling uses direct props (color, bg, bold, etc.)
- * State variations use nested objects (hover, focus)
+ * @example Basic input with theme defaults
+ * ```tsx
+ * <Input
+ *   width={30}
+ *   onSubmit={(value) => console.log('Submitted:', value)}
+ * />
+ * ```
  *
  * @example Uncontrolled input (with default value)
  * ```tsx
  * <Input
  *   width={30}
  *   defaultValue="Initial text"
- *   color="white"
- *   focus={{ border: { color: "cyan" } }}
  *   onSubmit={(value) => console.log('Submitted:', value)}
  *   onCancel={() => console.log('Cancelled')}
  * />
@@ -113,20 +113,19 @@ export class InputDescriptor extends BoxDescriptor<InputProps> {
  * />
  * ```
  *
- * @example With auto-focus and styling
+ * @example With custom styling (overrides theme)
  * ```tsx
  * <Input
  *   width={40}
- *   defaultValue="Focus me!"
- *   color="white"
- *   bg="blue"
- *   focus={{ border: { color: "cyan" }, bg: "darkblue" }}
- *   onSubmit={(value) => handleSubmit(value)}
+ *   color="cyan"
+ *   bg="black"
+ *   borderColor="cyan"
+ *   focus={{ border: { color: "yellow" } }}
  * />
  * ```
  */
 export const Input = forwardRef<any, InputProps>(({ ...props }, ref) => {
-  return <textinput ref={ref} border={1} height={3} color="white" {...props} />;
+  return <textinput ref={ref} tabIndex={0} border={1} height={3} {...props} />;
 });
 
 Input.displayName = "Input";

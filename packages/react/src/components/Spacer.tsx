@@ -10,7 +10,7 @@ import {
   FlexboxProps,
   WidgetDescriptor,
 } from "@unblessed/layout";
-import type { Theme } from "../theme.js";
+import type { Theme } from "../themes/theme.js";
 
 /**
  * Props interface for Spacer component

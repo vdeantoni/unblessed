@@ -6,7 +6,7 @@
  * (Tailwind CSS color system).
  */
 
-import type { Theme } from "../theme.js";
+import type { Theme } from "./theme.js";
 
 export const unblessedTheme: Theme = {
   name: "unblessed",
@@ -133,7 +133,7 @@ export const unblessedTheme: Theme = {
   semantic: {
     // Base colors
     foreground: "#e5e7eb", // gray.200
-    background: "#111827", // gray.900
+    background: "transparent", // gray.900
 
     // Interactive states
     primary: "#3b82f6", // blue.500
@@ -148,59 +148,43 @@ export const unblessedTheme: Theme = {
     info: "#06b6d4", // cyan.500
 
     // UI elements
-    border: "#374151", // gray.700
-    borderFocus: "#3b82f6", // blue.500
-    borderHover: "#4b5563", // gray.600
+    border: "#a6a6a6", // gray.700
+    focus: "#3b82f6", // blue.500
     shadow: "#000000",
+  },
 
-    // Interactive elements
-    hover: "#1f2937", // gray.800
-    focus: "#1e40af", // blue.800
-    active: "#1d4ed8", // blue.700
-    disabled: "#4b5563", // gray.600
+  global: {
+    borderStyle: "double",
+    borderColor: "$semantic.border",
 
-    // Selection
-    selection: "#2563eb", // blue.600
-    selectionForeground: "#ffffff",
+    fg: "$semantic.foreground",
+    bg: "transparent",
+
+    focusBorderColor: "$semantic.focus",
   },
 
   components: {
-    box: {
-      bg: "transparent",
-      fg: "$semantic.foreground",
-      border: "$semantic.border",
-    },
+    box: {},
 
     button: {
-      bg: "$semantic.primary",
-      fg: "#ffffff",
-      border: "$semantic.primary",
-      bgHover: "$primitives.blue.600",
-      bgActive: "$primitives.blue.700",
-      bgDisabled: "$semantic.disabled",
+      bg: "$semantic.background",
+      fg: "$semantic.foreground",
+      hoverFg: "$semantic.accent",
     },
 
-    input: {
-      bg: "$primitives.gray.800",
-      fg: "$semantic.foreground",
-      border: "$semantic.border",
-      borderFocus: "$semantic.borderFocus",
-      placeholder: "$semantic.muted",
-    },
+    input: {},
 
-    text: {
-      fg: "$semantic.foreground",
-      fgMuted: "$semantic.muted",
+    text: {},
+
+    bigtext: {
+      fg: "$semantic.primary",
     },
 
     list: {
-      bg: "transparent",
-      fg: "$semantic.foreground",
-      selected: "$semantic.selection",
-      selectedFg: "$semantic.selectionForeground",
       item: {
-        hover: "$semantic.hover",
-        hoverFg: "$semantic.foreground",
+        selectedFg: "$semantic.background",
+        selectedBg: "$semantic.secondary",
+        hoverFg: "$semantic.primary",
       },
     },
 

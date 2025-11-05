@@ -18,6 +18,8 @@ React renderer for unblessed with flexbox layout support.
 - 🎯 **TypeScript first** - Full type safety
 - 🌐 **Platform-agnostic** - Works in Node.js and browsers
 - 🖱️ **Event handling** - onClick, onKeyPress, onSubmit, and more
+- 🎭 **Theme system** - Runtime-swappable themes with design tokens
+- ✨ **State styling** - Hover and focus effects with theme integration
 
 ## Installation
 
@@ -165,11 +167,11 @@ Interactive button component with hover and focus effects.
 
 ```tsx
 <Button
-  border={1}
-  borderStyle="single"
-  hoverBg="blue"
-  focusBg="cyan"
   padding={1}
+  hover={{ bg: "blue", border: { color: "cyan" } }}
+  focus={{ border: { color: "yellow" } }}
+  onClick={() => console.log("Clicked!")}
+  onPress={() => console.log("Pressed!")}
 >
   Click Me
 </Button>
@@ -178,13 +180,16 @@ Interactive button component with hover and focus effects.
 **Props:**
 
 - All Box props (flexbox, border, colors, events, etc.)
-- `hoverBg` - Background color on hover
-- `focusBg` - Border color when focused
+- `hover` - Hover state styling (colors, border, text styles)
+- `focus` - Focus state styling (colors, border, text styles)
 - `onClick` - Click handler
 - `onPress` - Press handler (Enter key or click)
 - `tabIndex` - Focus order (default: 0)
 
-**Note:** Inherits all interactive properties including borders, events, and focus management.
+**Theme Integration:**
+
+- Automatically applies `theme.components.button.hoverFg/hoverBg` if no hover prop provided
+- User props override theme defaults
 
 ### Input
 
@@ -192,10 +197,9 @@ Text input component for user interaction.
 
 ```tsx
 <Input
-  border={1}
-  borderStyle="single"
-  borderColor="blue"
-  height={3}
+  width={40}
+  value={text}
+  onChange={(newValue) => setText(newValue)}
   onSubmit={(value) => console.log("Submitted:", value)}
   onCancel={() => console.log("Cancelled")}
 />
@@ -204,13 +208,52 @@ Text input component for user interaction.
 **Props:**
 
 - All Box props (flexbox, border, colors, events, etc.)
-- `value` - Input value
+- `value` - Controlled value
+- `defaultValue` - Uncontrolled default value
+- `hover`, `focus` - State styling
 - `onSubmit` - Submit handler (Enter key)
 - `onCancel` - Cancel handler (Escape key)
-- `onKeyPress` - Key press handler
+- All Box events (onClick, onKeyPress, onFocus, onBlur, etc.)
 - `tabIndex` - Focus order (default: 0)
 
-**Note:** Inherits all interactive properties including borders, events, and focus management.
+### List
+
+Scrollable, selectable list with keyboard and mouse support.
+
+```tsx
+<List
+  items={["Apple", "Banana", "Cherry"]}
+  label="Choose a fruit"
+  width={40}
+  height={10}
+  itemStyle={{ fg: "white" }}
+  itemSelected={{ fg: "cyan", bold: true }}
+  itemHover={{ fg: "yellow", bg: "black" }}
+  onSelect={(item, index) => console.log("Selected:", item)}
+/>
+```
+
+**Props:**
+
+- All Box props (container styling, borders, hover, focus)
+- `items` - Array of strings to display
+- `label` - List label/title
+- `itemStyle` - Normal item appearance
+- `itemSelected` - Selected item styling
+- `itemHover` - Hovered item styling
+- `onSelect` - Selection handler
+- `onCancel` - Cancel handler (Escape key)
+- `disabled` - Disable interaction
+- `vi` - Enable vi keybindings (j/k)
+- `scrollbar`, `scrollbarFg`, `scrollbarBg` - Scrollbar styling
+- `tabIndex` - Focus order (default: 0)
+
+**Theme Integration:**
+
+- Container uses theme from Box (borders, hover, focus)
+- Items use `theme.components.list.item.{fg,bg,selectedFg,selectedBg,hoverFg,hoverBg}`
+
+**Note:** Inherits all Box properties for container styling. Item styling uses separate props.
 
 ## Examples
 
@@ -399,6 +442,169 @@ const Counter = () => {
 render(<Counter />);
 ```
 
+## Theme System
+
+@unblessed/react includes a comprehensive theme system with design tokens, runtime theme switching, and automatic terminal color reduction.
+
+### Quick Start
+
+```tsx
+import { render, unblessedTheme, matrixTheme } from "@unblessed/react";
+
+// Use default theme
+render(<App />, { theme: unblessedTheme });
+
+// Or use Matrix theme
+render(<App />, { theme: matrixTheme });
+```
+
+### Available Themes
+
+**unblessedTheme** - Professional dark theme (default)
+
+- Background: `#111827` (gray.900)
+- Foreground: `#e5e7eb` (gray.200)
+- Primary: `#3b82f6` (blue.500)
+- Based on Tailwind CSS color system
+
+**matrixTheme** - Matrix movie-inspired theme
+
+- Background: `#0a0e0a` (near-black with green tint)
+- Foreground: `#00ff41` (bright Matrix green)
+- Primary: `#00ff00` (classic Matrix green)
+
+### Runtime Theme Switching
+
+```tsx
+import { useTheme, unblessedTheme, matrixTheme } from "@unblessed/react";
+
+function App() {
+  const [theme, setTheme] = useTheme();
+
+  return (
+    <Box flexDirection="column" gap={1}>
+      <Button
+        onClick={() =>
+          setTheme(theme === unblessedTheme ? matrixTheme : unblessedTheme)
+        }
+      >
+        Toggle Theme
+      </Button>
+      <Text fg="$primary">Primary colored text</Text>
+    </Box>
+  );
+}
+```
+
+### Theme Color References
+
+Use `$` prefix to reference theme colors:
+
+```tsx
+// Semantic colors (recommended)
+<Text fg="$primary">Primary text</Text>
+<Text fg="$semantic.success">Success message</Text>
+<Box borderColor="$semantic.border">Themed border</Box>
+
+// Primitive colors (specific shades)
+<Box bg="$primitives.blue.500">Blue background</Box>
+
+// Explicit colors (theme-independent)
+<Text fg="cyan">Always cyan, ignores theme</Text>
+```
+
+### State Styling (Hover & Focus)
+
+All interactive components support hover and focus styling:
+
+```tsx
+<Button
+  // Default state
+  color="white"
+  bg="blue"
+  border={1}
+  borderColor="blue"
+  // Hover state
+  hover={{
+    bg: "darkblue",
+    border: { color: "cyan" },
+  }}
+  // Focus state (when tabbed to)
+  focus={{
+    border: { color: "yellow" },
+  }}
+>
+  Interactive Button
+</Button>
+```
+
+**Automatic Focus Border:**
+
+- If widget has `border={1}` and no focus style provided
+- Automatically applies `theme.global.focusBorderColor` on focus
+- Override by providing explicit `focus` prop
+
+### Theme Architecture
+
+Three-layer design token system:
+
+1. **Primitives** - Color scales (gray.50-900, blue.50-900, etc.)
+2. **Semantic** - Intent-based colors (primary, success, error, etc.)
+3. **Components** - Widget-specific defaults (button.hoverFg, list.item.selectedBg, etc.)
+
+**Resolution Order (CSS-like cascade):**
+
+```
+User Props (highest priority)
+    ↓
+Component Theme Defaults
+    ↓
+Global Theme Defaults
+    ↓
+Hardcoded Fallbacks (lowest priority)
+```
+
+### Creating Custom Themes
+
+```tsx
+import { Theme, unblessedTheme } from "@unblessed/react";
+
+const myTheme: Theme = {
+  name: "my-theme",
+  primitives: unblessedTheme.primitives, // Reuse color scales
+  semantic: {
+    ...unblessedTheme.semantic,
+    primary: "#ff6b6b", // Custom primary color
+    success: "#51cf66",
+  },
+  global: {
+    ...unblessedTheme.global,
+    focusBorderColor: "$primary",
+  },
+  components: {
+    ...unblessedTheme.components,
+    button: {
+      bg: "$primary",
+      fg: "#ffffff",
+      hoverBg: "#ff5252",
+      hoverFg: "#ffffff",
+    },
+    list: {
+      item: {
+        fg: "$semantic.foreground",
+        selectedFg: "$primary",
+        selectedBg: "$primitives.gray.800",
+        hoverFg: "$semantic.accent",
+      },
+    },
+  },
+};
+
+render(<App />, { theme: myTheme });
+```
+
+See `examples/theme-demo.tsx` for a comprehensive demonstration.
+
 ## Architecture
 
 @unblessed/react builds on top of:
@@ -567,16 +773,23 @@ This separation allows:
 
 - React reconciler with full lifecycle support
 - Yoga flexbox layout engine integration
-- Components: Box, Text, Spacer, BigText, Button, Input
+- Components: Box, Text, Spacer, BigText, Button, Input, List
 - `render()` function with unmount/rerender support
 - Border styles and colors (per-side support)
 - Flexbox properties (gap, padding, margin, alignment, etc.)
 - Color conversion (string colors → terminal color codes)
-- Focus effects (hover, focus states)
-- **Event handling (onClick, onKeyPress, onSubmit, etc.)**
-- **Event cleanup on update/unmount**
-- **Content updates on state changes**
-- **14 tests passing (4 render + 6 event + 2 content update + 2 text width tests)**
+- **Theme system with runtime switching (useTheme hook)**
+- **Design token architecture (primitives → semantic → components)**
+- **Two built-in themes (unblessedTheme, matrixTheme)**
+- **State styling (hover and focus effects)**
+- **Automatic theme fallback for all components**
+- **Theme color references ($primary, $semantic.success, etc.)**
+- Event handling (onClick, onKeyPress, onSubmit, etc.)
+- Event cleanup on update/unmount
+- Content updates on state changes
+- Widget descriptor pattern for type-safe configuration
+- Composition via helper functions (borders, effects, focus, events)
+- 14+ tests passing
 
 **🚧 In Progress:**
 
@@ -587,9 +800,8 @@ This separation allows:
 
 **📋 Planned:**
 
-- More component wrappers (List, ListTable, ProgressBar, etc.)
+- More component wrappers (ListTable, ProgressBar, Checkbox, RadioButton, etc.)
 - Animation support
-- Context-based theming
 - Comprehensive documentation and examples
 
 ## Contributing

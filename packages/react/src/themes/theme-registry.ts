@@ -5,8 +5,8 @@
  * that both the reconciler and ThemeProvider can access.
  */
 
+import { unblessedTheme } from "./index.js";
 import type { Theme } from "./theme.js";
-import { unblessedTheme } from "./themes/index.js";
 
 let currentTheme: Theme = unblessedTheme;
 

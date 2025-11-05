@@ -41,8 +41,6 @@ function ThemeDemo() {
     t: handleToggleTheme,
   });
 
-  const isMatrix = theme.name === "matrix";
-
   return (
     <Box
       flexDirection="column"
@@ -54,15 +52,7 @@ function ThemeDemo() {
       minWidth={80}
     >
       {/* Header */}
-      <Box
-        border={1}
-        borderStyle="double"
-        borderColor="$primary"
-        padding={1}
-        flexDirection="column"
-        gap={1}
-        minHeight={6}
-      >
+      <Box border={1} padding={1} flexDirection="column" gap={1} minHeight={6}>
         <Text bold color="$primary">
           🎨 Unblessed Theme System Demo
         </Text>
@@ -74,28 +64,16 @@ function ThemeDemo() {
       {/* Theme toggle button */}
       <Button
         border={1}
-        borderStyle="single"
-        borderColor="$primary"
         padding={1}
         tabIndex={0}
-        onClick={handleToggleTheme}
+        onPress={handleToggleTheme}
         minHeight={5}
       >
-        <Text bold>
-          Toggle Theme (Current: {isMatrix ? "Matrix 🟢" : "Unblessed 🎨"})
-        </Text>
+        <Text>Toggle Theme (Current: {theme.name})</Text>
       </Button>
 
       {/* Semantic colors showcase */}
-      <Box
-        border={1}
-        borderStyle="single"
-        borderColor="$semantic.border"
-        padding={1}
-        flexDirection="column"
-        gap={1}
-        minHeight={8}
-      >
+      <Box border={1} padding={1} flexDirection="column" gap={1} minHeight={8}>
         <Text bold color="$semantic.foreground">
           Semantic Colors (Theme References):
         </Text>
@@ -140,15 +118,7 @@ function ThemeDemo() {
       </Box>
 
       {/* Primitive colors showcase */}
-      <Box
-        border={1}
-        borderStyle="single"
-        borderColor="$semantic.border"
-        padding={1}
-        flexDirection="column"
-        gap={1}
-        minHeight={8}
-      >
+      <Box border={1} padding={1} flexDirection="column" gap={1} minHeight={8}>
         <Text bold color="$semantic.foreground">
           Primitive Colors (Direct References):
         </Text>
@@ -219,59 +189,33 @@ function ThemeDemo() {
       </Box>
 
       {/* Interactive components */}
-      <Box
-        border={1}
-        borderStyle="single"
-        borderColor="$semantic.border"
-        padding={1}
-        flexDirection="column"
-        gap={1}
-        minHeight={12}
-      >
+      <Box border={1} padding={1} flexDirection="column" gap={1} minHeight={12}>
         <Text bold color="$semantic.foreground">
           Interactive Components:
         </Text>
-        <Input
-          border={1}
-          borderStyle="single"
-          borderColor="$semantic.border"
-          padding={1}
-          width={40}
-          tabIndex={1}
-          minHeight={5}
-        />
-        <Box flexDirection="row" gap={2} minHeight={5}>
+
+        <Input />
+
+        <Box flexDirection="row" gap={2} justifyContent="center">
           <Button
-            border={1}
-            borderStyle="single"
+            color="$semantic.success"
             borderColor="$semantic.success"
             padding={1}
-            tabIndex={2}
-            minHeight={3}
           >
-            <Text color="$semantic.success">Accept</Text>
+            <Text>Accept</Text>
           </Button>
           <Button
-            border={1}
-            borderStyle="single"
+            color="$semantic.error"
             borderColor="$semantic.error"
             padding={1}
-            tabIndex={3}
-            minHeight={3}
           >
-            <Text color="$semantic.error">Cancel</Text>
+            <Text>Cancel</Text>
           </Button>
         </Box>
       </Box>
 
       {/* Footer */}
-      <Box
-        border={1}
-        borderStyle="single"
-        borderColor="$semantic.border"
-        padding={1}
-        minHeight={5}
-      >
+      <Box border={1} padding={1} minHeight={5}>
         <Text color="$semantic.muted">
           💡 Tip: All theme colors automatically adapt to your terminal's color
           capabilities (256-color, 16-color, etc.)
@@ -284,5 +228,5 @@ function ThemeDemo() {
 // Render app with unblessed theme by default
 render(<ThemeDemo />, {
   runtime: new NodeRuntime(),
-  theme: unblessedTheme,
+  theme: matrixTheme,
 });

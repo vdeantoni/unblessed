@@ -55,14 +55,14 @@ export {
   type KeyboardHandler,
   type KeyboardShortcuts,
 } from "./hooks/useKeyboard.js";
+export { matrixTheme, unblessedTheme } from "./themes/index.js";
 export type {
   ColorPrimitive,
-  ComponentColors,
+  ComponentDefaults,
   Theme,
   ThemePrimitives,
   ThemeSemantic,
-} from "./theme.js";
-export { matrixTheme, unblessedTheme } from "./themes/index.js";
+} from "./themes/theme.js";
 
 // Theme utilities (for advanced usage)
-export { isThemeReference, resolveColor } from "./theme-utils.js";
+export { isThemeReference, resolveColor } from "./themes/theme-utils.js";

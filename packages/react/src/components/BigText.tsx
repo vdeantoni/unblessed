@@ -28,7 +28,10 @@ export class BigTextDescriptor extends BoxDescriptor<BigTextProps> {
   override readonly type = "bigtext";
 
   override get widgetOptions() {
+    // Apply theme defaults via parent (Box) which will call buildStyleObject with 'bigtext'
+    // But we need to override the component type for theme lookup
     const options = super.widgetOptions;
+
     if (this.props.font) options.font = this.props.font;
     if (this.props.fontBold) options.fontBold = this.props.fontBold;
     if (this.props.char) options.fch = this.props.char;
@@ -55,23 +58,28 @@ export class BigTextDescriptor extends BoxDescriptor<BigTextProps> {
  *
  * Uses terminal fonts to render large text. Each character is 14 rows × 8 columns.
  * Supports all BoxProps including flexbox layout, borders, and event handling.
+ * Automatically applies theme defaults for text color.
  *
- * @example
+ * @example Basic big text with theme defaults
+ * ```tsx
+ * <BigText>HELLO</BigText>
+ * ```
+ *
+ * @example With custom color (overrides theme)
  * ```tsx
  * <BigText color="cyan">
- *   HELLO
+ *   WELCOME
  * </BigText>
  * ```
  *
  * @example With border and events
  * ```tsx
  * <BigText
- *   color="green"
  *   borderStyle="single"
  *   padding={1}
  *   onClick={() => console.log('Big text clicked!')}
  * >
- *   WELCOME
+ *   HELLO
  * </BigText>
  * ```
  */
@@ -83,7 +91,6 @@ export const BigText = forwardRef<any, PropsWithChildren<BigTextProps>>(
     return (
       <bigtext
         ref={ref}
-        color="white"
         height={fontHeight}
         width={(children?.length || 0) * fontWidth}
         {...props}

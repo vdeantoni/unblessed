@@ -31,6 +31,42 @@ function unbindEventHandlers(
 }
 
 /**
+ * Applies style inheritance from parent to text widget.
+ * Text widgets inherit fg and bg from their immediate parent's base style.
+ * Only inherits if user didn't provide explicit props.
+ *
+ * Priority order:
+ * 1. User props (highest - skip inheritance)
+ * 2. Parent base style (if not explicit)
+ * 3. Theme defaults (already applied in widgetOptions)
+ *
+ * @param textWidget - Text widget to apply inheritance to
+ * @param parentNode - Parent layout node with base style
+ * @param textNode - Text layout node with explicit prop tracking
+ */
+function applyTextInheritance(
+  textWidget: Element,
+  parentNode: LayoutNode,
+  textNode: LayoutNode,
+): void {
+  const explicit = textNode.widgetOptions?._explicitProps || {};
+  const parentStyle = parentNode.widgetOptions?.style || {};
+
+  // Ensure text widget has style object
+  textWidget.style = textWidget.style || {};
+
+  // Inherit fg from parent's base style (not runtime hover/focus state)
+  if (!explicit.fg && parentStyle.fg !== undefined) {
+    textWidget.style.fg = parentStyle.fg;
+  }
+
+  // Inherit bg from parent's base style
+  if (!explicit.bg && parentStyle.bg !== undefined) {
+    textWidget.style.bg = parentStyle.bg;
+  }
+}
+
+/**
  * Extracts computed layout from a Yoga node.
  */
 export function getComputedLayout(node: LayoutNode): ComputedLayout {
@@ -161,6 +197,12 @@ export function syncWidgetWithYoga(node: LayoutNode, screen: Screen): Element {
         widget.setContent(fullContent);
       }
     }
+  }
+
+  // Apply style inheritance for text widgets
+  // Text inherits fg and bg from parent's base style if user didn't provide explicit props
+  if (node.type === "text" && node.parent) {
+    applyTextInheritance(widget, node.parent, node);
   }
 
   return widget;
