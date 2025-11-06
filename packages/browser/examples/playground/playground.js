@@ -7,6 +7,16 @@ import { FitAddon } from "https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/+
 import { Terminal } from "https://cdn.jsdelivr.net/npm/xterm@5.3.0/+esm";
 import * as tui from "../../dist/index.js";
 
+// Import React and Babel for JSX transformation
+import { transform } from "https://esm.sh/@babel/standalone@7.23.5";
+import React from "https://esm.sh/react@18.3.1";
+
+// Import React components from @unblessed/react
+import * as tuiReact from "../../../react/dist/index.js";
+
+// BrowserRuntime is now exported from the main package
+const { BrowserRuntime } = tui;
+
 export class BlessedPlayground {
   constructor(terminalElement, options = {}) {
     this.terminalElement = terminalElement;
@@ -17,6 +27,13 @@ export class BlessedPlayground {
     this.timeouts = [];
     this.debounceDelay = options.debounceDelay ?? 300;
     this.debounceTimer = null;
+
+    // Initialize BrowserRuntime once for the playground
+    this.runtime = new BrowserRuntime();
+
+    // Set the runtime globally so Screen can access it
+    const { setRuntime } = tui;
+    setRuntime(this.runtime);
   }
 
   /**
@@ -139,6 +156,35 @@ export class BlessedPlayground {
   }
 
   /**
+   * Check if code contains JSX
+   */
+  isJSXCode(code) {
+    // Simple heuristic: check for JSX-like patterns
+    // Look for React component patterns or the render function from tuiReact
+    return (
+      code.includes("tuiReact") ||
+      code.includes("render(<") ||
+      /<[A-Z]/.test(code) || // JSX components start with capital letter: <Box>, <Text>
+      code.includes("</") // Closing JSX tags
+    );
+  }
+
+  /**
+   * Transform JSX code to regular JavaScript
+   */
+  transformJSX(code) {
+    try {
+      const result = transform(code, {
+        presets: ["react"],
+        filename: "playground.jsx",
+      });
+      return result.code;
+    } catch (error) {
+      throw new Error(`JSX transformation failed: ${error.message}`);
+    }
+  }
+
+  /**
    * Run user code
    */
   async run(code) {
@@ -161,7 +207,16 @@ export class BlessedPlayground {
       // Clear terminal
       this.terminal.clear();
 
-      // Create new screen
+      // Check if this is JSX code
+      const isJSX = this.isJSXCode(code);
+
+      // Transform JSX if needed
+      let transformedCode = code;
+      if (isJSX) {
+        transformedCode = this.transformJSX(code);
+      }
+
+      // Create new screen for the playground
       this.screen = new tui.Screen({
         terminal: this.terminal,
       });
@@ -184,26 +239,57 @@ export class BlessedPlayground {
         return id;
       };
 
-      // Create sandboxed function with tui and screen in scope
-      const userFunction = new Function(
-        "tui",
-        "screen",
-        "setInterval",
-        "setTimeout",
-        "clearInterval",
-        "clearTimeout",
-        code,
-      );
+      if (isJSX) {
+        // Merge tui with React components for convenience
+        const tuiWithReact = {
+          ...tui,
+          ...tuiReact,
+        };
 
-      // Execute user code
-      await userFunction(
-        tui,
-        this.screen,
-        wrappedSetInterval,
-        wrappedSetTimeout,
-        clearInterval,
-        clearTimeout,
-      );
+        // Create a function that has access to the screen
+        const userFunction = new Function(
+          "React",
+          "tui",
+          "screen",
+          "setInterval",
+          "setTimeout",
+          "clearInterval",
+          "clearTimeout",
+          transformedCode,
+        );
+
+        // Execute with React available, passing the screen
+        await userFunction(
+          React,
+          tuiWithReact,
+          this.screen,
+          wrappedSetInterval,
+          wrappedSetTimeout,
+          clearInterval,
+          clearTimeout,
+        );
+      } else {
+        // Classic mode
+        const userFunction = new Function(
+          "tui",
+          "screen",
+          "setInterval",
+          "setTimeout",
+          "clearInterval",
+          "clearTimeout",
+          transformedCode,
+        );
+
+        // Execute user code
+        await userFunction(
+          tui,
+          this.screen,
+          wrappedSetInterval,
+          wrappedSetTimeout,
+          clearInterval,
+          clearTimeout,
+        );
+      }
     } catch (error) {
       // Display error
       this.showError(error);
