@@ -24,7 +24,16 @@
 
     <script type="module">
       import { Terminal } from "https://cdn.jsdelivr.net/npm/xterm@5.3.0/+esm";
-      import { Screen, Table } from "../../../dist/index.js";
+      import {
+        BrowserRuntime,
+        setRuntime,
+        Screen,
+        Table,
+      } from "../../../dist/index.js";
+
+      // Initialize runtime first
+      const runtime = new BrowserRuntime();
+      setRuntime(runtime);
       const term = new Terminal({ rows: 24, cols: 80 });
       term.open(document.getElementById("terminal"));
       const screen = new Screen({ terminal: term });

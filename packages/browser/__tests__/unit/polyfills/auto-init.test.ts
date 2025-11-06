@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-describe("runtime/auto-init", () => {
-  // Note: auto-init runs via vitest.setup.ts before tests
+describe("runtime/globals", () => {
+  // Note: globals are set up by BrowserRuntime in vitest.setup.ts
   // These tests verify that the polyfills were correctly set up
 
   it("has process global set up", () => {

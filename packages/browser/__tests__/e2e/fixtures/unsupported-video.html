@@ -24,7 +24,16 @@
 
     <script type="module">
       import { Terminal } from "https://cdn.jsdelivr.net/npm/xterm@5.3.0/+esm";
-      import { Screen, Video } from "../../../dist/index.js";
+      import {
+        BrowserRuntime,
+        setRuntime,
+        Screen,
+        Video,
+      } from "../../../dist/index.js";
+
+      // Initialize runtime first
+      const runtime = new BrowserRuntime();
+      setRuntime(runtime);
 
       window.testError = null;
       window.testWidget = null;
