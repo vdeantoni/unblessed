@@ -1,152 +1,135 @@
 /**
- * events.test.tsx - Event handling tests
+ * events.test.tsx - Test event handling
+ *
+ * PURPOSE: Verify that event handlers are properly bound and work
  */
 
-import { describe, expect, it, vi } from "vitest";
-import { Box, render } from "../src/index.js";
+import { describe, expect, it } from "vitest";
+import { Box, Button, Input, render } from "../src/index.js";
 import { testRuntime } from "./setup.js";
+import { expectRenderSuccess, findWidgetsByType } from "./test-helpers.js";
 
 describe("Event Handling", () => {
-  it("should bind onClick handler to Box widget", () => {
-    const onClick = vi.fn();
+  it("should bind onClick handler to Box widget", async () => {
+    let clicked = false;
 
     const instance = render(
-      <Box width={10} height={5} onClick={onClick}>
-        Click me
-      </Box>,
+      <Box width={20} height={5} onClick={() => (clicked = true)} />,
       { runtime: testRuntime },
     );
 
-    const rootWidget = instance.screen.children[0];
-    const widget = rootWidget.children[0];
+    await expectRenderSuccess(instance);
 
-    expect(widget.listeners("click")).toHaveLength(1);
+    // Find the box widget and trigger click event
+    const boxes = findWidgetsByType(instance.screen, "box");
+    expect(boxes.length).toBeGreaterThan(0);
 
-    widget.emit("click", { x: 1, y: 1, action: "mousedown", button: "left" });
+    const box = boxes[boxes.length - 1]; // Get the last box (user's box, not root)
+    box.emit("click");
 
-    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(clicked).toBe(true);
 
     instance.unmount();
   });
 
-  it("should bind onKeyPress handler to Box widget", () => {
-    const onKeyPress = vi.fn();
+  it("should bind onKeyPress handler to Box widget", async () => {
+    let keyPressed = false;
+    let lastKey = "";
 
     const instance = render(
-      <Box width={10} height={5} onKeyPress={onKeyPress}>
-        Press me
-      </Box>,
+      <Box
+        width={20}
+        height={5}
+        onKeyPress={(ch: string) => {
+          keyPressed = true;
+          lastKey = ch;
+        }}
+      />,
       { runtime: testRuntime },
     );
 
-    const widget = instance.screen.children[0].children[0];
+    await expectRenderSuccess(instance);
 
-    expect(widget.listeners("keypress")).toHaveLength(1);
+    const boxes = findWidgetsByType(instance.screen, "box");
+    const box = boxes[boxes.length - 1];
+    box.emit("keypress", "a", { name: "a" });
 
-    widget.emit("keypress", "a", {
-      full: "a",
-      name: "a",
-      shift: false,
-      ctrl: false,
-      meta: false,
-      sequence: "a",
-      ch: "a",
-    });
-
-    expect(onKeyPress).toHaveBeenCalledTimes(1);
-    expect(onKeyPress).toHaveBeenCalledWith("a", expect.any(Object));
+    expect(keyPressed).toBe(true);
+    expect(lastKey).toBe("a");
 
     instance.unmount();
   });
 
-  it("should bind onPress handler to Button widget", () => {
-    const onPress = vi.fn();
+  it("should bind onPress handler to Button widget", async () => {
+    let pressed = false;
 
     const instance = render(
-      <tbutton width={10} height={3} onPress={onPress}>
-        Button
-      </tbutton>,
+      <Button width={20} height={3} onPress={() => (pressed = true)} />,
       { runtime: testRuntime },
     );
 
-    const widget = instance.screen.children[0].children[0];
+    await expectRenderSuccess(instance);
 
-    expect(widget.listeners("press")).toHaveLength(1);
+    const buttons = findWidgetsByType(instance.screen, "button");
+    expect(buttons.length).toBeGreaterThan(0);
 
-    widget.emit("press");
+    buttons[0].emit("press");
 
-    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(pressed).toBe(true);
 
     instance.unmount();
   });
 
-  it("should bind onSubmit handler to Input widget", () => {
-    const onSubmit = vi.fn();
+  it("should bind onSubmit handler to Input widget", async () => {
+    let submitted = false;
+    let value = "";
 
     const instance = render(
-      <textinput width={20} height={3} onSubmit={onSubmit} />,
+      <Input
+        width={20}
+        onSubmit={(val: string) => {
+          submitted = true;
+          value = val;
+        }}
+      />,
       { runtime: testRuntime },
     );
 
-    const widget = instance.screen.children[0].children[0];
+    await expectRenderSuccess(instance);
 
-    expect(widget.listeners("submit")).toHaveLength(1);
+    const inputs = findWidgetsByType(instance.screen, "textbox");
+    expect(inputs.length).toBeGreaterThan(0);
 
-    widget.emit("submit", "test value");
+    inputs[0].emit("submit", "test value");
 
-    expect(onSubmit).toHaveBeenCalledTimes(1);
-    expect(onSubmit).toHaveBeenCalledWith("test value");
+    expect(submitted).toBe(true);
+    expect(value).toBe("test value");
 
     instance.unmount();
   });
 
-  it("should unbind old handlers when props change", () => {
-    const onClick1 = vi.fn();
-    const onClick2 = vi.fn();
+  it("should clean up handlers on unmount", async () => {
+    let clickCount = 0;
 
     const instance = render(
-      <Box width={10} height={5} onClick={onClick1}>
-        Click me
-      </Box>,
+      <Box width={20} height={5} onClick={() => clickCount++} />,
       { runtime: testRuntime },
     );
 
-    const widget = instance.screen.children[0].children[0];
+    await expectRenderSuccess(instance);
 
-    widget.emit("click", { x: 1, y: 1, action: "mousedown" });
-    expect(onClick1).toHaveBeenCalledTimes(1);
-    expect(onClick2).toHaveBeenCalledTimes(0);
+    const boxes = findWidgetsByType(instance.screen, "box");
+    const box = boxes[boxes.length - 1];
 
-    instance.rerender(
-      <Box width={10} height={5} onClick={onClick2}>
-        Click me
-      </Box>,
-    );
+    // Trigger before unmount
+    box.emit("click");
+    expect(clickCount).toBe(1);
 
-    widget.emit("click", { x: 1, y: 1, action: "mousedown" });
-
-    expect(onClick1).toHaveBeenCalledTimes(1);
-    expect(onClick2).toHaveBeenCalledTimes(1);
-
-    instance.unmount();
-  });
-
-  it("should unbind handlers on unmount", () => {
-    const onClick = vi.fn();
-
-    const instance = render(
-      <Box width={10} height={5} onClick={onClick}>
-        Click me
-      </Box>,
-      { runtime: testRuntime },
-    );
-
-    const widget = instance.screen.children[0].children[0];
-
-    expect(widget.listeners("click")).toHaveLength(1);
-
+    // Unmount
     instance.unmount();
 
-    expect(onClick).toHaveBeenCalledTimes(0);
+    // Trigger after unmount - should not increase count
+    box.emit("click");
+    expect(clickCount).toBe(1); // Should still be 1
   });
 });

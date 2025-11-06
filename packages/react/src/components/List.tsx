@@ -33,7 +33,7 @@ export interface ListProps extends InteractiveWidgetProps {
   children?: ReactNode;
 
   // label
-  label: string;
+  label?: string;
 
   // Events
   onSelect?: (item: string, index: number) => void;

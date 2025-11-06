@@ -2,8 +2,10 @@
  * jsx.d.ts - JSX type definitions for @unblessed/react
  *
  * Declares the custom intrinsic JSX elements that our reconciler handles.
+ * Uses React module augmentation for compatibility with the new JSX transform.
  */
 
+import "react";
 import type { BigTextProps } from "./components/BigText.js";
 import type { BoxProps } from "./components/Box.js";
 import type { ButtonProps } from "./components/Button.js";
@@ -12,7 +14,7 @@ import type { ListProps } from "./components/List.js";
 import type { SpacerProps } from "./components/Spacer.js";
 import type { TextProps } from "./components/Text.js";
 
-declare global {
+declare module "react" {
   namespace JSX {
     interface IntrinsicElements {
       box: BoxProps & { ref?: any };
@@ -26,5 +28,3 @@ declare global {
     }
   }
 }
-
-export {};

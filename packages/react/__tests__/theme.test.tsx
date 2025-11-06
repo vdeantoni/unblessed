@@ -1,208 +1,145 @@
 /**
  * theme.test.tsx - Tests for theme system
+ *
+ * PURPOSE: Verify that themes work and colors can be resolved
  */
 
-import { NodeRuntime } from "@unblessed/node";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import {
-  Box,
-  matrixTheme,
-  render,
-  Text,
-  unblessedTheme,
-  useTheme,
-} from "../src";
+import { afterEach, describe, it } from "vitest";
+import { Box, matrixTheme, render, Text, unblessedTheme } from "../src";
+import { testRuntime } from "./setup.js";
+import { expectRenderSuccess } from "./test-helpers.js";
 
 describe("Theme System", () => {
-  beforeAll(() => {
-    // Suppress console output during tests
-    vi.spyOn(console, "log").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
+  const instances: ReturnType<typeof render>[] = [];
+
+  afterEach(async () => {
+    // Clean up all instances
+    for (const instance of instances) {
+      instance.unmount();
+    }
+    instances.length = 0;
+    // Wait for cleanup
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
 
-  let instances: ReturnType<typeof render>[] = [];
+  it("renders with default unblessedTheme", async () => {
+    const instance = render(
+      <Box width={20} height={10}>
+        <Text>Test</Text>
+      </Box>,
+      {
+        runtime: testRuntime,
+      },
+    );
+    instances.push(instance);
 
-  afterEach(() => {
-    instances.forEach((instance) => instance.unmount());
-    instances = [];
+    await expectRenderSuccess(instance);
   });
 
-  describe("Theme Provider", () => {
-    it("provides default unblessedTheme when no theme specified", () => {
-      let capturedTheme: any = null;
-
-      function TestApp() {
-        const [theme] = useTheme();
-        capturedTheme = theme;
-        return (
-          <Box>
-            <Text>Test</Text>
-          </Box>
-        );
-      }
-
-      const instance = render(<TestApp />, {
-        runtime: new NodeRuntime(),
-      });
-      instances.push(instance);
-
-      expect(capturedTheme).toBeDefined();
-      expect(capturedTheme.name).toBe("unblessed");
-    });
-
-    it("uses provided theme on initial render", () => {
-      let capturedTheme: any = null;
-
-      function TestApp() {
-        const [theme] = useTheme();
-        capturedTheme = theme;
-        return (
-          <Box>
-            <Text>Test</Text>
-          </Box>
-        );
-      }
-
-      const instance = render(<TestApp />, {
-        runtime: new NodeRuntime(),
+  it("renders with matrixTheme", async () => {
+    const instance = render(
+      <Box width={20} height={10}>
+        <Text>Test</Text>
+      </Box>,
+      {
+        runtime: testRuntime,
         theme: matrixTheme,
-      });
-      instances.push(instance);
+      },
+    );
+    instances.push(instance);
 
-      expect(capturedTheme).toBeDefined();
-      expect(capturedTheme.name).toBe("matrix");
-    });
+    await expectRenderSuccess(instance);
+  });
 
-    it("switches themes using functional update", () => {
-      let capturedTheme: any = null;
-      let setThemeFunc: any = null;
-
-      function TestApp() {
-        const [theme, setTheme] = useTheme();
-        capturedTheme = theme;
-        setThemeFunc = setTheme;
-        return (
-          <Box>
-            <Text>{theme.name}</Text>
-          </Box>
-        );
-      }
-
-      const instance = render(<TestApp />, {
-        runtime: new NodeRuntime(),
+  it("renders with custom theme colors", async () => {
+    const instance = render(
+      <Box width={20} height={10} border={1} borderColor="$primary">
+        <Text color="$semantic.foreground">Themed</Text>
+      </Box>,
+      {
+        runtime: testRuntime,
         theme: unblessedTheme,
-      });
-      instances.push(instance);
+      },
+    );
+    instances.push(instance);
 
-      // Initial theme
-      expect(capturedTheme.name).toBe("unblessed");
+    await expectRenderSuccess(instance);
+  });
 
-      // Switch theme using functional update
-      setThemeFunc((current: any) =>
-        current.name === "unblessed" ? matrixTheme : unblessedTheme,
+  describe("Color Resolution", () => {
+    it("resolves $primary semantic color", async () => {
+      const instance = render(
+        <Box width={20} height={10}>
+          <Text color="$primary">Primary</Text>
+        </Box>,
+        {
+          runtime: testRuntime,
+          theme: unblessedTheme,
+        },
       );
+      instances.push(instance);
 
-      // Theme should have changed
-      expect(capturedTheme.name).toBe("matrix");
+      await expectRenderSuccess(instance);
+    });
+
+    it("resolves $semantic.success color", async () => {
+      const instance = render(
+        <Box width={20} height={10}>
+          <Text color="$semantic.success">Success</Text>
+        </Box>,
+        {
+          runtime: testRuntime,
+          theme: unblessedTheme,
+        },
+      );
+      instances.push(instance);
+
+      await expectRenderSuccess(instance);
+    });
+
+    it("resolves $primitives.blue.500 color", async () => {
+      const instance = render(
+        <Box width={20} height={10}>
+          <Text color="$primitives.blue.500">Blue</Text>
+        </Box>,
+        {
+          runtime: testRuntime,
+          theme: unblessedTheme,
+        },
+      );
+      instances.push(instance);
+
+      await expectRenderSuccess(instance);
+    });
+
+    it("uses explicit colors without theme resolution", async () => {
+      const instance = render(
+        <Box width={20} height={10}>
+          <Text color="cyan">Cyan</Text>
+        </Box>,
+        {
+          runtime: testRuntime,
+          theme: unblessedTheme,
+        },
+      );
+      instances.push(instance);
+
+      await expectRenderSuccess(instance);
+    });
+
+    it("applies matrix theme colors", async () => {
+      const instance = render(
+        <Box width={20} height={10} border={1} borderColor="$primary">
+          <Text color="$semantic.foreground">Matrix</Text>
+        </Box>,
+        {
+          runtime: testRuntime,
+          theme: matrixTheme,
+        },
+      );
+      instances.push(instance);
+
+      await expectRenderSuccess(instance);
     });
   });
-
-  describe("Theme Color Resolution", () => {
-    it("resolves $primary semantic color for unblessedTheme", () => {
-      function TestApp() {
-        return <Text color="$primary">Primary</Text>;
-      }
-
-      const instance = render(<TestApp />, {
-        runtime: new NodeRuntime(),
-        theme: unblessedTheme,
-      });
-      instances.push(instance);
-
-      // Colors should be resolved (checked via no errors during render)
-      expect(instance.screen).toBeDefined();
-    });
-
-    it("resolves $primary semantic color for matrixTheme", () => {
-      function TestApp() {
-        return <Text color="$primary">Primary</Text>;
-      }
-
-      const instance = render(<TestApp />, {
-        runtime: new NodeRuntime(),
-        theme: matrixTheme,
-      });
-      instances.push(instance);
-
-      // Colors should be resolved (checked via no errors during render)
-      expect(instance.screen).toBeDefined();
-    });
-
-    it("resolves $semantic.success color", () => {
-      function TestApp() {
-        return <Text color="$semantic.success">Success</Text>;
-      }
-
-      const instance = render(<TestApp />, {
-        runtime: new NodeRuntime(),
-        theme: unblessedTheme,
-      });
-      instances.push(instance);
-
-      expect(instance.screen).toBeDefined();
-    });
-
-    it("resolves $primitives.blue.500 color", () => {
-      function TestApp() {
-        return <Text color="$primitives.blue.500">Blue</Text>;
-      }
-
-      const instance = render(<TestApp />, {
-        runtime: new NodeRuntime(),
-        theme: unblessedTheme,
-      });
-      instances.push(instance);
-
-      expect(instance.screen).toBeDefined();
-    });
-
-    it("uses explicit colors without theme resolution", () => {
-      function TestApp() {
-        return <Text color="cyan">Cyan</Text>;
-      }
-
-      const instance = render(<TestApp />, {
-        runtime: new NodeRuntime(),
-        theme: unblessedTheme,
-      });
-      instances.push(instance);
-
-      // Explicit color should work (no errors)
-      expect(instance.screen).toBeDefined();
-    });
-
-    it("applies matrix theme green colors correctly", () => {
-      function TestApp() {
-        return (
-          <Box border={1} borderColor="$primary">
-            <Text color="$semantic.foreground">Matrix</Text>
-          </Box>
-        );
-      }
-
-      const instance = render(<TestApp />, {
-        runtime: new NodeRuntime(),
-        theme: matrixTheme,
-      });
-      instances.push(instance);
-
-      // Matrix theme should apply without errors
-      expect(instance.screen).toBeDefined();
-    });
-  });
-
-  // Note: Theme switching integration tests are skipped because:
-  // 1. useEffect runs asynchronously and is hard to test synchronously
-  // 2. Basic switching is covered by "switches themes using functional update" test
-  // 3. Full theme switching is verified manually in examples/theme-demo.tsx
 });

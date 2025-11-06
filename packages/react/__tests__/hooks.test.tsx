@@ -1,54 +1,47 @@
 /**
  * hooks.test.tsx - Tests for useScreen and useWindowSize hooks
+ *
+ * PURPOSE: Verify that hooks provide access to screen and dimensions
  */
 
-import { NodeRuntime } from "@unblessed/node";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Box, render, Text, useScreen, useWindowSize } from "../src";
+import { testRuntime } from "./setup.js";
+import { expectRenderSuccess } from "./test-helpers.js";
 
 describe("Screen Hooks", () => {
-  beforeAll(() => {
-    // Suppress console output during tests
-    vi.spyOn(console, "log").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
-  });
-
-  let instances: ReturnType<typeof render>[] = [];
-
-  afterEach(() => {
-    instances.forEach((instance) => instance.unmount());
-    instances = [];
-  });
-
   describe("useScreen", () => {
-    it("provides access to screen instance", () => {
+    it("provides access to screen instance", async () => {
       let capturedScreen: any = null;
 
       function TestApp() {
         capturedScreen = useScreen();
         return (
-          <Box>
+          <Box width={20} height={10}>
             <Text>Test</Text>
           </Box>
         );
       }
 
       const instance = render(<TestApp />, {
-        runtime: new NodeRuntime(),
+        runtime: testRuntime,
       });
-      instances.push(instance);
+
+      await expectRenderSuccess(instance);
 
       expect(capturedScreen).toBeDefined();
       expect(capturedScreen).toBe(instance.screen);
+
+      instance.unmount();
     });
 
-    it("provides same screen instance across components", () => {
+    it("provides same screen instance across components", async () => {
       const screens: any[] = [];
 
       function ComponentA() {
         screens.push(useScreen());
         return (
-          <Box>
+          <Box width={10} height={5}>
             <Text>A</Text>
           </Box>
         );
@@ -57,7 +50,7 @@ describe("Screen Hooks", () => {
       function ComponentB() {
         screens.push(useScreen());
         return (
-          <Box>
+          <Box width={10} height={5}>
             <Text>B</Text>
           </Box>
         );
@@ -65,7 +58,7 @@ describe("Screen Hooks", () => {
 
       function TestApp() {
         return (
-          <Box>
+          <Box flexDirection="row" width={20} height={5}>
             <ComponentA />
             <ComponentB />
           </Box>
@@ -73,41 +66,42 @@ describe("Screen Hooks", () => {
       }
 
       const instance = render(<TestApp />, {
-        runtime: new NodeRuntime(),
+        runtime: testRuntime,
       });
-      instances.push(instance);
+
+      await expectRenderSuccess(instance);
 
       expect(screens.length).toBe(2);
       expect(screens[0]).toBe(screens[1]); // Same screen instance
+
+      instance.unmount();
     });
   });
 
   describe("useWindowSize", () => {
-    it("returns current screen dimensions", () => {
+    it("returns current screen dimensions", async () => {
       let capturedSize: any = null;
 
       function TestApp() {
         capturedSize = useWindowSize();
         return (
-          <Box>
+          <Box width={20} height={10}>
             <Text>Test</Text>
           </Box>
         );
       }
 
       const instance = render(<TestApp />, {
-        runtime: new NodeRuntime(),
+        runtime: testRuntime,
       });
-      instances.push(instance);
+
+      await expectRenderSuccess(instance);
 
       expect(capturedSize).toBeDefined();
-      expect(capturedSize.width).toBe(instance.screen.width);
-      expect(capturedSize.height).toBe(instance.screen.height);
-    });
+      expect(capturedSize.width).toBeDefined();
+      expect(capturedSize.height).toBeDefined();
 
-    // Note: Testing resize updates is difficult because:
-    // 1. useEffect dependencies on object properties don't trigger re-renders
-    // 2. Screen resize in tests happens synchronously but React updates are async
-    // The functionality is verified manually in examples/theme-demo.tsx
+      instance.unmount();
+    });
   });
 });

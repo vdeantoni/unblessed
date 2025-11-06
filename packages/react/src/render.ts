@@ -116,12 +116,16 @@ export function render(
   rootDOMNode.screen = screen;
 
   // Set up layout calculation callback
+  let isUnmounted = false;
   rootDOMNode.onComputeLayout = () => {
+    // Skip layout if unmounted to prevent accessing freed Yoga nodes
+    if (isUnmounted) return;
+
     // Calculate layout using LayoutManager
     manager.performLayout(rootLayoutNode);
   };
 
-  // Create React container
+  // Create React container with enhanced error handling
   const container = reconciler.createContainer(
     rootDOMNode,
     0, // LegacyRoot
@@ -129,7 +133,43 @@ export function render(
     false, // isStrictMode
     null, // concurrentUpdatesByDefaultOverride
     "", // identifierPrefix
-    (error: Error) => console.error(error), // onRecoverableError
+    // onUncaughtError - Errors not caught by error boundaries
+    (error: Error, errorInfo: { componentStack?: string }) => {
+      console.error("\n❌ Uncaught error in React component:");
+      console.error(error);
+      if (errorInfo.componentStack) {
+        console.error("\nComponent stack:", errorInfo.componentStack);
+      }
+    },
+    // onCaughtError - Errors caught by error boundaries
+    (
+      error: Error,
+      errorInfo: {
+        componentStack?: string;
+        errorBoundary?: React.Component;
+      },
+    ) => {
+      console.error("\n⚠️  Error caught by error boundary:");
+      console.error(error);
+      if (errorInfo.componentStack) {
+        console.error("\nComponent stack:", errorInfo.componentStack);
+      }
+      if (errorInfo.errorBoundary) {
+        console.error(
+          "\nError boundary:",
+          errorInfo.errorBoundary.constructor.name,
+        );
+      }
+    },
+    // onRecoverableError - Errors React recovered from (e.g., hydration mismatches)
+    (error: Error, errorInfo: { componentStack?: string }) => {
+      console.warn("\n⚡ Recoverable error (React recovered automatically):");
+      console.warn(error.message);
+      if (errorInfo.componentStack) {
+        console.warn("\nComponent stack:", errorInfo.componentStack);
+      }
+    },
+    () => {}, // onDefaultTransitionIndicator
     null, // transitionCallbacks
   );
 
@@ -181,6 +221,9 @@ export function render(
   return {
     screen,
     unmount: () => {
+      // Set flag to prevent layout calculation after unmount
+      isUnmounted = true;
+
       // Remove resize listener
       screen.off("resize", handleResize);
 

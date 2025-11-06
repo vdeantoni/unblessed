@@ -12,7 +12,11 @@
 
 import { LayoutManager, updateLayoutNode } from "@unblessed/layout";
 import createReconciler from "react-reconciler";
-import { DefaultEventPriority } from "react-reconciler/constants.js";
+import {
+  DefaultEventPriority,
+  type EventPriority,
+  NoEventPriority,
+} from "react-reconciler/constants.js";
 import {
   appendChild,
   createElement,
@@ -52,6 +56,11 @@ function getLayoutManager(): LayoutManager {
   }
   return currentLayoutManager;
 }
+
+/**
+ * Priority tracking for React updates
+ */
+let currentUpdatePriority: EventPriority = NoEventPriority;
 
 const reconciler = createReconciler<
   ElementType,
@@ -147,7 +156,7 @@ const reconciler = createReconciler<
   removeChild(parent, child) {
     removeChild(parent, child);
 
-    // Also update layout tree
+    // Remove from layout tree
     const manager = getLayoutManager();
     manager.removeChild(parent.layoutNode, child.layoutNode);
   },
@@ -179,20 +188,14 @@ const reconciler = createReconciler<
     );
   },
 
-  // Updates
-  prepareUpdate() {
-    // Return non-null to indicate update is needed
-    // The actual update happens in commitUpdate
-    return true;
-  },
-
   commitUpdate(instance, _updatePayload, type, _oldProps, newProps) {
     updateNodeProps(instance, newProps);
 
     const theme = getCurrentTheme();
 
-    // Create/update descriptor with new props and theme
-    const descriptor = createDescriptor(type, newProps, theme);
+    // Use instance.type (the string type like "box", "text") instead of the type parameter
+    // which could be a React component function/class
+    const descriptor = createDescriptor(instance.type, newProps, theme);
 
     // Update layout node with new descriptor properties
     updateLayoutNode(instance.layoutNode, descriptor.flexProps);
@@ -257,8 +260,35 @@ const reconciler = createReconciler<
   getCurrentEventPriority: () => DefaultEventPriority,
 
   // Update priority
-  // @ts-expect-error
-  setCurrentUpdatePriority: () => {},
+  setCurrentUpdatePriority(newPriority: EventPriority) {
+    currentUpdatePriority = newPriority;
+  },
+
+  getCurrentUpdatePriority(): EventPriority {
+    return currentUpdatePriority;
+  },
+
+  resolveUpdatePriority(): EventPriority {
+    if (currentUpdatePriority !== NoEventPriority) {
+      return currentUpdatePriority;
+    }
+    return DefaultEventPriority;
+  },
+
+  // Scheduler event tracking (for profiling, not needed for basic rendering)
+  trackSchedulerEvent() {},
+
+  resolveEventType(): null | string {
+    return null;
+  },
+
+  resolveEventTimeStamp(): number {
+    return -1;
+  },
+
+  shouldAttemptEagerTransition(): boolean {
+    return false;
+  },
 
   // Scope (unused)
   getInstanceFromNode: () => null,
@@ -271,6 +301,21 @@ const reconciler = createReconciler<
   // Active instance (unused)
   beforeActiveInstanceBlur: () => {},
   afterActiveInstanceBlur: () => {},
+
+  supportsMicrotasks: true,
+  scheduleMicrotask:
+    typeof queueMicrotask === "function"
+      ? queueMicrotask
+      : typeof Promise !== "undefined"
+        ? (callback) =>
+            Promise.resolve(null)
+              .then(callback)
+              .catch((error) => {
+                setTimeout(() => {
+                  throw error;
+                });
+              })
+        : setTimeout,
 });
 
 export default reconciler;

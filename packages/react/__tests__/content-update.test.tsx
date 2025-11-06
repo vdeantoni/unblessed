@@ -1,19 +1,22 @@
 /**
  * content-update.test.tsx - Test content updates on state changes
+ *
+ * PURPOSE: Verify that React state updates trigger proper re-renders
  */
 
 import { useState } from "react";
 import { describe, expect, it } from "vitest";
 import { Box, render, Text } from "../src/index.js";
 import { testRuntime } from "./setup.js";
+import { expectRenderSuccess, findWidgetByContent } from "./test-helpers.js";
 
 describe("Content Updates", () => {
-  it("should update text content when state changes", () => {
-    let setCount: (c: number) => void;
+  it("should update text content when state changes", async () => {
+    let updateCount: (c: number) => void = () => {};
 
     const Counter = () => {
-      const [count, _setCount] = useState(0);
-      setCount = _setCount;
+      const [count, setCount] = useState(0);
+      updateCount = setCount;
 
       return (
         <Box width={20} height={5}>
@@ -23,31 +26,36 @@ describe("Content Updates", () => {
     };
 
     const instance = render(<Counter />, { runtime: testRuntime });
+    expectRenderSuccess(instance);
 
-    const rootWidget = instance.screen.children[0];
-    const boxWidget = rootWidget.children[0];
-    const textWidget = boxWidget.children[0];
+    // Initial state - count should be 0
+    let widget = findWidgetByContent(instance.screen, "Count: 0");
+    expect(widget).toBeDefined();
 
-    expect(textWidget.content).toContain("Count: 0");
+    // Update to 5
+    updateCount(5);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    widget = findWidgetByContent(instance.screen, "Count: 5");
+    expect(widget).toBeDefined();
 
-    setCount(5);
-    expect(textWidget.content).toContain("Count: 5");
-
-    setCount(42);
-    expect(textWidget.content).toContain("Count: 42");
+    // Update to 42
+    updateCount(42);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    widget = findWidgetByContent(instance.screen, "Count: 42");
+    expect(widget).toBeDefined();
 
     instance.unmount();
   });
 
-  it("should update multiple text widgets independently", () => {
-    let setX: (n: number) => void;
-    let setY: (n: number) => void;
+  it("should handle multiple independent state updates", async () => {
+    let updateX: (n: number) => void = () => {};
+    let updateY: (n: number) => void = () => {};
 
     const Coords = () => {
-      const [x, _setX] = useState(0);
-      const [y, _setY] = useState(0);
-      setX = _setX;
-      setY = _setY;
+      const [x, setX] = useState(0);
+      const [y, setY] = useState(0);
+      updateX = setX;
+      updateY = setY;
 
       return (
         <Box flexDirection="column" width={30} height={10}>
@@ -58,22 +66,23 @@ describe("Content Updates", () => {
     };
 
     const instance = render(<Coords />, { runtime: testRuntime });
+    expectRenderSuccess(instance);
 
-    const rootWidget = instance.screen.children[0];
-    const boxWidget = rootWidget.children[0];
-    const textWidget1 = boxWidget.children[0];
-    const textWidget2 = boxWidget.children[1];
+    // Initial state
+    expect(findWidgetByContent(instance.screen, "X: 0")).toBeDefined();
+    expect(findWidgetByContent(instance.screen, "Y: 0")).toBeDefined();
 
-    expect(textWidget1.content).toContain("X: 0");
-    expect(textWidget2.content).toContain("Y: 0");
+    // Update X only
+    updateX(10);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(findWidgetByContent(instance.screen, "X: 10")).toBeDefined();
+    expect(findWidgetByContent(instance.screen, "Y: 0")).toBeDefined();
 
-    setX(10);
-    expect(textWidget1.content).toContain("X: 10");
-    expect(textWidget2.content).toContain("Y: 0");
-
-    setY(20);
-    expect(textWidget1.content).toContain("X: 10");
-    expect(textWidget2.content).toContain("Y: 20");
+    // Update Y only
+    updateY(20);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(findWidgetByContent(instance.screen, "X: 10")).toBeDefined();
+    expect(findWidgetByContent(instance.screen, "Y: 20")).toBeDefined();
 
     instance.unmount();
   });
