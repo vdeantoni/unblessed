@@ -1,3 +1,23 @@
+# [1.0.0-alpha.19](https://github.com/vdeantoni/unblessed/compare/v1.0.0-alpha.18...v1.0.0-alpha.19) (2025-11-06)
+
+
+### Bug Fixes
+
+* **react,browser:** add missing prepareUpdate and export React ([18affa0](https://github.com/vdeantoni/unblessed/commit/18affa02162f2670e0266c5faeefcc319eaefa6d))
+
+
+### Features
+
+* **browser:** add code executor with explicit React hooks support ([ad679d5](https://github.com/vdeantoni/unblessed/commit/ad679d56841c14d2d35494e81644f135905e8547))
+* **browser:** add playground orchestrator and entry point ([a6bc61e](https://github.com/vdeantoni/unblessed/commit/a6bc61eba375b8ab2235ca450997ffd58cf6afa0))
+* **browser:** add terminal manager and JSX transformer modules ([5ced4b7](https://github.com/vdeantoni/unblessed/commit/5ced4b71eb2261c9b094d3a24a953564253bbeb6))
+* **browser:** add TypeScript config and type definitions to playground ([fd9dfb5](https://github.com/vdeantoni/unblessed/commit/fd9dfb58fffb2d556ddbb4896ffbf81a639a3963))
+* **browser:** extract polyfills into separate modules ([209e0a9](https://github.com/vdeantoni/unblessed/commit/209e0a9d4d38bc9d756953ff8d31a0b230b6fc6e))
+* **browser:** update playground configuration for TypeScript ([156f60d](https://github.com/vdeantoni/unblessed/commit/156f60d75373149bd8ebb6d6eb7bde0071442e78))
+* **react:** add test helpers and refactor tests ([dc6259b](https://github.com/vdeantoni/unblessed/commit/dc6259bd2cc95e49ecebecfd6df9cfd101353619))
+* **react:** implement comprehensive theme system with helper refactoring ([d4c84f4](https://github.com/vdeantoni/unblessed/commit/d4c84f43ea0b7719a6e8d8d64c32a4bb5168b45c))
+* **react:** refactor themes to unblessed and matrix + add comprehensive tests ([51bf4fe](https://github.com/vdeantoni/unblessed/commit/51bf4fe26b5e4f3208395e120f329b94adee77fc))
+
 # [1.0.0-alpha.18](https://github.com/vdeantoni/unblessed/compare/v1.0.0-alpha.17...v1.0.0-alpha.18) (2025-11-04)
 
 
