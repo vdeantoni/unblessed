@@ -16,7 +16,7 @@ import {
 
 // Initialize test runtime
 import { getRuntime } from "../../src/runtime-context.js";
-import { initTestRuntime, setTestEnv } from "../helpers/mock.js";
+import { getTestEnv, initTestRuntime, setTestEnv } from "../helpers/mock.js";
 
 // Import Program after mocking
 import ProgramModule from "../../src/lib/program.js";
@@ -5252,8 +5252,8 @@ describe("Program - Phase 18: High-Value Integration", () => {
     });
 
     it("should return false on non-iTerm2 terminals", () => {
-      const originalTermProgram = process.env.TERM_PROGRAM;
-      delete process.env.TERM_PROGRAM;
+      const originalTermProgram = getTestEnv("TERM_PROGRAM");
+      setTestEnv("TERM_PROGRAM", undefined);
 
       program = new Program({ input, output, terminal: "xterm" });
 
@@ -5267,9 +5267,7 @@ describe("Program - Phase 18: High-Value Integration", () => {
       expect(written).toBe("");
 
       // Restore
-      if (originalTermProgram !== undefined) {
-        process.env.TERM_PROGRAM = originalTermProgram;
-      }
+      setTestEnv("TERM_PROGRAM", originalTermProgram);
     });
   });
 

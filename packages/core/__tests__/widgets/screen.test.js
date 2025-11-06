@@ -444,7 +444,7 @@ describe("Screen", () => {
     });
 
     it("should handle fullUnicode option", () => {
-      const s = new Screen({ fullUnicode: true });
+      const s = new Screen({ fullUnicode: true, forceUnicode: true });
 
       expect(s.fullUnicode).toBe(true);
 

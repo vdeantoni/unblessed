@@ -2444,7 +2444,7 @@ class Screen extends Node {
         const val = effects[key];
         if (val !== null && typeof val === "object") {
           tmp[key] = tmp[key] || {};
-          // element.style[key] = element.style[key] || {};
+          element.style[key] = element.style[key] || {};
           Object.keys(val).forEach((k: any) => {
             const v = val[k];
             tmp[key][k] = element.style[key][k];
@@ -2464,7 +2464,7 @@ class Screen extends Node {
         const val = effects[key];
         if (val !== null && typeof val === "object") {
           tmp[key] = tmp[key] || {};
-          // element.style[key] = element.style[key] || {};
+          element.style[key] = element.style[key] || {};
           Object.keys(val).forEach((k: any) => {
             if (tmp[key].hasOwnProperty(k)) {
               element.style[key][k] = tmp[key][k];

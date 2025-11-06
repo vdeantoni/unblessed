@@ -33,7 +33,7 @@ function createMockEnv() {
     HOME: process.env.HOME || "/home/test",
     USER: process.env.USER || "test",
     PATH: process.env.PATH || "/usr/bin:/bin",
-    TERM: "xterm-256color", // Default to standard xterm
+    TERM: "screen-256color", // Default to screen (tests traditional \x03 padding)
     // Explicitly unset terminal detection variables
     TERM_PROGRAM: undefined,
     ITERM_SESSION_ID: undefined,
@@ -51,6 +51,8 @@ function createMockEnv() {
  * This is used by default in setup.js for global test initialization
  */
 export function createNodeRuntimeForTests() {
+  const mockEnv = createMockEnv(); // Use mock env with screen-256color
+
   return {
     // Core APIs (required)
     fs: {
@@ -84,7 +86,7 @@ export function createNodeRuntimeForTests() {
       stderr: process.stderr,
       platform: process.platform,
       arch: process.arch,
-      env: process.env,
+      env: mockEnv, // Use mock environment
       cwd: process.cwd.bind(process),
       exit: process.exit.bind(process),
       pid: process.pid,
