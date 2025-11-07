@@ -58,6 +58,7 @@ export {
   type KeyboardHandler,
   type KeyboardShortcuts,
 } from "./hooks/useKeyboard.js";
+export { useWidget } from "./hooks/useWidget.js";
 export { matrixTheme, unblessedTheme } from "./themes/index.js";
 export type {
   ColorPrimitive,
@@ -69,3 +70,18 @@ export type {
 
 // Theme utilities (for advanced usage)
 export { isThemeReference, resolveColor } from "./themes/theme-utils.js";
+
+// Re-export animation utilities from @unblessed/core for convenience
+export {
+  AnimationController,
+  Spring,
+  clamp,
+  easing,
+  generateGradient,
+  generateRainbow,
+  lerp,
+  lerpColor,
+  makeAnimatable,
+  rotateColors,
+  type AnimatableMethods,
+} from "@unblessed/core";

@@ -94,7 +94,18 @@ export interface ScrollableOptions {
   ignoreKeys?: boolean | string[];
 }
 
-export interface ElementOptions extends NodeOptions, ScrollableOptions {
+export interface AnimatableOptions {
+  /**
+   * Whether the element supports animations (animateBorderColors, pulse, fade).
+   * When true, adds animation methods via makeAnimatable mixin.
+   */
+  animatable?: boolean;
+}
+
+export interface ElementOptions
+  extends NodeOptions,
+    ScrollableOptions,
+    AnimatableOptions {
   /**
    * Parse tags in content (e.g. {bold}text{/bold}).
    */

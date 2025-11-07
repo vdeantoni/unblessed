@@ -12,6 +12,10 @@ import helpers from "../lib/helpers.js";
 import { getEnvVar, getNextTick } from "../lib/runtime-helpers.js";
 import unicode from "../lib/unicode.js";
 import {
+  makeAnimatable,
+  type AnimatableMethods,
+} from "../mixins/animatable.js";
+import {
   makeScrollable,
   type ScrollableMethods,
 } from "../mixins/scrollable.js";
@@ -111,6 +115,13 @@ class Element extends Node {
   resetScroll?: ScrollableMethods["resetScroll"];
   _scrollBottom?: ScrollableMethods["_scrollBottom"];
   _recalculateIndex?: ScrollableMethods["_recalculateIndex"];
+
+  // Animatable mixin - flag indicating if element supports animations
+  animatable?: boolean;
+
+  // Animatable mixin methods - added at runtime by makeAnimatable()
+  animateBorderColors?: AnimatableMethods["animateBorderColors"];
+  pulse?: AnimatableMethods["pulse"];
 
   get focused(): boolean {
     return this.screen.focused === this;
@@ -321,6 +332,11 @@ class Element extends Node {
     // Apply scrollable behavior if requested (skip if already a ScrollableBox subclass)
     if (options.scrollable && options.type !== "scrollable-box") {
       makeScrollable(this, options);
+    }
+
+    // Apply animatable behavior if requested
+    if (options.animatable) {
+      makeAnimatable(this);
     }
   }
 

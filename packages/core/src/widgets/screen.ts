@@ -141,6 +141,14 @@ class Screen extends Node {
   _cursorBlink?: any;
   override type = "screen";
 
+  // Performance optimization properties
+  private _renderThrottle?: ReturnType<typeof setTimeout>;
+  private _renderQueued: boolean = false;
+  private _maxFPS: number = 60;
+  private _batchMode: boolean = false;
+  private _batchRenderNeeded: boolean = false;
+  private _batchDepth: number = 0;
+
   constructor(options: ScreenOptions = {}) {
     if (options.rsety && options.listen) {
       options = { program: options };
@@ -889,6 +897,12 @@ class Screen extends Node {
   render(): void {
     if (this.destroyed) return;
 
+    // Respect batch mode - queue render instead of executing
+    if (this._batchMode) {
+      this._batchRenderNeeded = true;
+      return;
+    }
+
     this.emit("prerender");
 
     this._borderStops = {};
@@ -924,6 +938,120 @@ class Screen extends Node {
     this.renders++;
 
     this.emit("render");
+  }
+
+  /**
+   * Set maximum FPS for throttled rendering.
+   * Controls how fast renderThrottled() can trigger renders.
+   *
+   * @param fps - Maximum frames per second (default: 60)
+   *
+   * @example
+   * ```ts
+   * screen.setMaxFPS(30);  // Limit to 30 FPS for smoother animations
+   * ```
+   */
+  setMaxFPS(fps: number): void {
+    this._maxFPS = fps;
+  }
+
+  /**
+   * Throttled render - limits FPS to avoid excessive rendering.
+   * Queues a render and executes at most once per frame time.
+   * Useful for animations and frequent updates.
+   *
+   * @example
+   * ```ts
+   * // In an animation loop
+   * setInterval(() => {
+   *   box.setContent(`Frame ${frame++}`);
+   *   screen.renderThrottled();  // Won't render more than maxFPS times per second
+   * }, 16);
+   * ```
+   */
+  renderThrottled(): void {
+    if (this._renderQueued) {
+      return; // Already have a pending render
+    }
+
+    this._renderQueued = true;
+    const frameTime = 1000 / this._maxFPS;
+
+    this._renderThrottle = setTimeout(() => {
+      this._renderQueued = false;
+      this.render();
+    }, frameTime);
+  }
+
+  /**
+   * Cancel any queued throttled renders.
+   * Useful for cleanup when stopping animations.
+   *
+   * @example
+   * ```ts
+   * // Stop animation and cancel pending renders
+   * clearInterval(animationInterval);
+   * screen.cancelThrottledRender();
+   * ```
+   */
+  cancelThrottledRender(): void {
+    if (this._renderThrottle) {
+      clearTimeout(this._renderThrottle);
+      this._renderThrottle = undefined;
+      this._renderQueued = false;
+    }
+  }
+
+  /**
+   * Begin batch mode - defer rendering until endBatch().
+   * Multiple updates will only trigger a single render when batch ends.
+   * Supports nested batching - only the outermost endBatch() will render.
+   *
+   * @example
+   * ```ts
+   * screen.beginBatch();
+   *
+   * // Multiple updates - only renders once at end
+   * for (let i = 0; i < 100; i++) {
+   *   boxes[i].setContent(`Item ${i}`);
+   * }
+   *
+   * screen.endBatch();  // Single render here
+   * ```
+   */
+  beginBatch(): void {
+    this._batchDepth++;
+    if (this._batchDepth === 1) {
+      this._batchMode = true;
+      this._batchRenderNeeded = false;
+    }
+  }
+
+  /**
+   * End batch mode - render once if any updates occurred during the batch.
+   * If no updates happened, no render is performed.
+   * Supports nested batching - only the outermost endBatch() will render.
+   *
+   * @example
+   * ```ts
+   * screen.beginBatch();
+   * updateManyWidgets();
+   * screen.endBatch();  // Renders once with all changes
+   * ```
+   */
+  endBatch(): void {
+    if (this._batchDepth > 0) {
+      this._batchDepth--;
+    }
+
+    // Only exit batch mode and render when we reach depth 0
+    if (this._batchDepth === 0) {
+      this._batchMode = false;
+      if (this._batchRenderNeeded) {
+        this.render();
+        this._batchRenderNeeded = false;
+      }
+    }
   }
 
   /**

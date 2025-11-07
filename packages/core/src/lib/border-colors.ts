@@ -151,16 +151,15 @@ export function rotateColors(
   colorArray: (string | number)[],
   steps: number = 1,
 ): (string | number)[] {
-  const result = [...colorArray];
+  if (colorArray.length === 0) return [];
+
+  // Normalize steps to be within array bounds
   const normalizedSteps =
-    ((steps % result.length) + result.length) % result.length;
+    ((steps % colorArray.length) + colorArray.length) % colorArray.length;
 
-  for (let i = 0; i < normalizedSteps; i++) {
-    const last = result.pop();
-    if (last !== undefined) {
-      result.unshift(last);
-    }
-  }
+  // Optimized rotation using slice (O(n) instead of O(n * steps))
+  if (normalizedSteps === 0) return [...colorArray];
 
-  return result;
+  const splitPoint = colorArray.length - normalizedSteps;
+  return [...colorArray.slice(splitPoint), ...colorArray.slice(0, splitPoint)];
 }
