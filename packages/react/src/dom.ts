@@ -17,7 +17,19 @@ import { TextProps } from "./components/Text";
 /**
  * Element types in our virtual DOM
  */
-export type ElementType = "box" | "text" | "root";
+export type ElementType =
+  | "box"
+  | "text"
+  | "bigtext"
+  | "button"
+  | "tbutton"
+  | "input"
+  | "textinput"
+  | "spacer"
+  | "list"
+  | "charcanvas"
+  | "braillecanvas"
+  | "root";
 
 /**
  * Virtual DOM node - wraps a LayoutNode with React-specific metadata

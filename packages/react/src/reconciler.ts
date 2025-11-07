@@ -234,7 +234,11 @@ const reconciler = createReconciler<
   clearContainer: () => false,
 
   // Instance management
-  getPublicInstance: (instance) => instance,
+  getPublicInstance: (instance) => {
+    // Return the underlying unblessed widget for refs
+    // This allows refs to point directly to Element instances
+    return instance.layoutNode?.widget || instance;
+  },
   finalizeInitialChildren: () => false,
   shouldSetTextContent: () => false,
 

@@ -8,7 +8,9 @@
 import "react";
 import type { BigTextProps } from "./components/BigText.js";
 import type { BoxProps } from "./components/Box.js";
+import type { BrailleCanvasProps } from "./components/BrailleCanvas.js";
 import type { ButtonProps } from "./components/Button.js";
+import type { CharCanvasProps } from "./components/CharCanvas.js";
 import type { InputProps } from "./components/Input.js";
 import type { ListProps } from "./components/List.js";
 import type { SpacerProps } from "./components/Spacer.js";
@@ -24,6 +26,8 @@ declare module "react" {
       textinput: InputProps & { ref?: any }; // Use 'textinput' to avoid conflict with HTML input
       spacer: SpacerProps & { ref?: any };
       list: ListProps & { ref?: any };
+      charcanvas: CharCanvasProps & { ref?: any };
+      braillecanvas: BrailleCanvasProps & { ref?: any };
       root: any;
     }
   }

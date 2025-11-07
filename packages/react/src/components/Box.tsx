@@ -187,8 +187,25 @@ export class BoxDescriptor<T extends BoxProps> extends WidgetDescriptor<
  *   Click or press Enter
  * </Box>
  * ```
+ *
+ * @example With ref for direct widget manipulation
+ * ```tsx
+ * const App = () => {
+ *   const boxRef = useRef<BoxWidget>(null);
+ *
+ *   useEffect(() => {
+ *     if (boxRef.current) {
+ *       // Direct access to unblessed Box widget
+ *       makeAnimatable(boxRef.current);
+ *       boxRef.current.animateBorderColors(...);
+ *     }
+ *   }, []);
+ *
+ *   return <Box ref={boxRef} border={1}>Animated!</Box>;
+ * };
+ * ```
  */
-export const Box = forwardRef<any, PropsWithChildren<BoxProps>>(
+export const Box = forwardRef<BoxWidget, PropsWithChildren<BoxProps>>(
   ({ children, ...props }, ref) => {
     return (
       <box ref={ref} {...props}>

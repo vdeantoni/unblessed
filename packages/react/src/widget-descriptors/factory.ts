@@ -8,7 +8,9 @@
 import { WidgetDescriptor } from "@unblessed/layout";
 import { BigTextDescriptor } from "../components/BigText.js";
 import { BoxDescriptor } from "../components/Box.js";
+import { BrailleCanvasDescriptor } from "../components/BrailleCanvas.js";
 import { ButtonDescriptor } from "../components/Button.js";
+import { CharCanvasDescriptor } from "../components/CharCanvas.js";
 import { InputDescriptor } from "../components/Input.js";
 import { ListDescriptor } from "../components/List.js";
 import { SpacerDescriptor } from "../components/Spacer.js";
@@ -31,6 +33,8 @@ const descriptorRegistry = new Map<
   ["bigtext", BigTextDescriptor],
   ["spacer", SpacerDescriptor],
   ["list", ListDescriptor],
+  ["charcanvas", CharCanvasDescriptor],
+  ["braillecanvas", BrailleCanvasDescriptor],
 ]);
 
 /**

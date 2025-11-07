@@ -111,8 +111,24 @@ export class TextDescriptor extends WidgetDescriptor<TextProps, Theme> {
  *   Hello <Text color="red">World</Text>!
  * </Text>
  * ```
+ *
+ * @example With ref for direct widget manipulation
+ * ```tsx
+ * const App = () => {
+ *   const textRef = useRef<TextWidget>(null);
+ *
+ *   useEffect(() => {
+ *     if (textRef.current) {
+ *       // Direct access to unblessed Text widget
+ *       textRef.current.setContent('Updated!');
+ *     }
+ *   }, []);
+ *
+ *   return <Text ref={textRef}>Initial</Text>;
+ * };
+ * ```
  */
-export const Text = forwardRef<any, PropsWithChildren<TextProps>>(
+export const Text = forwardRef<TextWidget, PropsWithChildren<TextProps>>(
   ({ children, ...props }, ref) => {
     return (
       <text ref={ref} minHeight={1} {...props}>

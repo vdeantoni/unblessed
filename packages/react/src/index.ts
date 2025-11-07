@@ -33,7 +33,12 @@ export { default as React } from "react";
 // Components
 export { BigText, type BigTextProps } from "./components/BigText.js";
 export { Box, type BoxProps } from "./components/Box.js";
+export {
+  BrailleCanvas,
+  type BrailleCanvasProps,
+} from "./components/BrailleCanvas.js";
 export { Button, type ButtonProps } from "./components/Button.js";
+export { CharCanvas, type CharCanvasProps } from "./components/CharCanvas.js";
 export { Input, type InputProps } from "./components/Input.js";
 export { List, type ListProps } from "./components/List.js";
 export { Spacer } from "./components/Spacer.js";
@@ -58,6 +63,11 @@ export {
   type KeyboardHandler,
   type KeyboardShortcuts,
 } from "./hooks/useKeyboard.js";
+export {
+  useResponsiveCanvas,
+  type ResponsiveCanvasDimensions,
+  type UseResponsiveCanvasOptions,
+} from "./hooks/useResponsiveCanvas.js";
 export { useWidget } from "./hooks/useWidget.js";
 export { matrixTheme, unblessedTheme } from "./themes/index.js";
 export type {
