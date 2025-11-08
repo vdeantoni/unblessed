@@ -43,7 +43,7 @@ const DEFAULT_ROTATING_COLORS: (string | number)[] = [
  * @param length - Total length of the gradient
  * @returns Array of interpolated colors
  */
-function generateMultiColorGradient(
+export function generateMultiColorGradient(
   colors: (string | number)[],
   length: number,
 ): (string | number)[] {
@@ -170,6 +170,23 @@ export const textAnimationDefaults: Record<
   typewriter: {
     duration: 2000,
   },
+  chase: {
+    baseColor: "gray",
+    highlightColor: "white",
+    width: 3,
+    direction: "ltr",
+    mode: "loop",
+    fps: 30,
+  },
+  blink: {
+    duration: 500,
+  },
+  gradient: {
+    colors: ["cyan", "blue", "magenta"],
+  },
+  rainbow: {
+    fps: 10,
+  },
 };
 
 /**
@@ -189,5 +206,10 @@ export function getTextAnimationConfig(
     colors: config.colors ?? defaults.colors ?? ["white"],
     duration: config.duration ?? defaults.duration ?? 1000,
     text: config.text,
+    baseColor: config.baseColor ?? defaults.baseColor ?? "gray",
+    highlightColor: config.highlightColor ?? defaults.highlightColor ?? "white",
+    width: config.width ?? defaults.width ?? 3,
+    direction: config.direction ?? defaults.direction ?? "ltr",
+    mode: config.mode ?? defaults.mode ?? "loop",
   };
 }

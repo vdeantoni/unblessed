@@ -5,7 +5,6 @@
  * manual useEffect + refs + makeAnimatable boilerplate.
  */
 
-import type { Box as BoxWidget } from "@unblessed/core";
 import { NodeRuntime } from "@unblessed/node";
 import { Box, Text, render } from "@unblessed/react";
 import * as React from "react";
@@ -147,53 +146,110 @@ function FadeInBox() {
 }
 
 /**
- * Demo: Compare imperative vs declarative
+ * Demo: Chase effect (left-to-right loop)
  */
-function Comparison() {
-  const boxRef = React.useRef<BoxWidget>(null);
-
-  // Imperative approach (old way)
-  React.useEffect(() => {
-    const widget = boxRef.current;
-    if (!widget) return;
-
-    // This is the old way - lots of boilerplate!
-    // makeAnimatable(widget);
-    // const stop = widget.animateBorderColors((length, frame) => {
-    //   const colors = generateRainbow(length);
-    //   return rotateColors(colors, frame);
-    // }, { fps: 10 });
-    // return () => stop();
-  }, []);
-
+function ChaseEffectLTR() {
   return (
-    <Box flexDirection="column" gap={1}>
-      <Box>
-        <Text bold underline>
-          Before (Imperative - 10+ lines):
-        </Text>
-      </Box>
-      <Box border={1} borderStyle="single" padding={1}>
-        <Text dim>const ref = useRef();</Text>
-        <Text dim>useEffect(() =&gt; {"{"}</Text>
-        <Text dim> makeAnimatable(ref.current);</Text>
-        <Text dim> const stop = ref.current.animate...;</Text>
-        <Text dim> return () =&gt; stop();</Text>
-        <Text dim>{"}"}, []);</Text>
-      </Box>
+    <Box border={1} borderStyle="single" padding={1} width={40} height={5}>
+      <Text
+        animateColor={{
+          type: "chase",
+          baseColor: "gray",
+          highlightColor: "cyan",
+          width: 3,
+          direction: "ltr",
+          mode: "loop",
+          fps: 20,
+        }}
+      >
+        Loading data...
+      </Text>
+      <Text dim>Chase effect (loop)</Text>
+    </Box>
+  );
+}
 
-      <Box>
-        <Text bold underline>
-          After (Declarative - 1 prop!):
-        </Text>
-      </Box>
-      <Box border={1} borderStyle="single" padding={1}>
-        <Text color="green" bold>
-          animateBorder={"{"}
-          {"{"} type: "rainbow" {"}"}
-          {"}"}
-        </Text>
-      </Box>
+/**
+ * Demo: Chase effect (bounce mode)
+ */
+function ChaseEffectBounce() {
+  return (
+    <Box border={1} borderStyle="single" padding={1} width={40} height={5}>
+      <Text
+        animateColor={{
+          type: "chase",
+          baseColor: "gray",
+          highlightColor: "yellow",
+          width: 4,
+          direction: "ltr",
+          mode: "bounce",
+          fps: 15,
+        }}
+      >
+        Processing...
+      </Text>
+      <Text dim>Chase effect (bounce)</Text>
+    </Box>
+  );
+}
+
+/**
+ * Demo: Blink effect
+ */
+function BlinkEffect() {
+  return (
+    <Box border={1} borderStyle="single" padding={1} width={40} height={5}>
+      <Text
+        bold
+        color="red"
+        animateColor={{
+          type: "blink",
+          duration: 400,
+        }}
+      >
+        ⚠️ Warning!
+      </Text>
+      <Text dim>Classic terminal blink</Text>
+    </Box>
+  );
+}
+
+/**
+ * Demo: Gradient effect
+ */
+function GradientEffect() {
+  return (
+    <Box border={1} borderStyle="single" padding={1} width={40} height={5}>
+      <Text
+        bold
+        animateColor={{
+          type: "gradient",
+          colors: ["cyan", "blue", "magenta"],
+        }}
+      >
+        Beautiful Gradient Text
+      </Text>
+      <Text dim>Static gradient (not animated)</Text>
+    </Box>
+  );
+}
+
+/**
+ * Demo: Rainbow effect
+ */
+function RainbowEffect() {
+  return (
+    <Box border={1} borderStyle="single" padding={1} width={40} height={5}>
+      <Text
+        bold
+        animateColor={{
+          type: "rainbow",
+          fps: 10,
+        }}
+      >
+        Rainbow Animation!
+      </Text>
+      <Text dim>Animated rainbow colors</Text>
     </Box>
   );
 }
@@ -210,20 +266,36 @@ function App() {
         </Text>
       </Box>
 
+      <Box>
+        <Text bold>Border Animations:</Text>
+      </Box>
       <Box flexDirection="row" gap={2}>
-        <Box flexDirection="column" gap={1}>
-          <RainbowBorderBox />
-          <GradientBorderBox />
-          <RotatingColorsBox />
-        </Box>
+        <RainbowBorderBox />
+        <GradientBorderBox />
+        <RotatingColorsBox />
+      </Box>
 
-        <Box flexDirection="column" gap={1}>
-          <PulsingText />
-          <ColorCycleText />
-          <FadeInBox />
-        </Box>
+      <Box>
+        <Text bold>Text Animations (Basic):</Text>
+      </Box>
+      <Box flexDirection="row" gap={2}>
+        <PulsingText />
+        <ColorCycleText />
+        <FadeInBox />
+      </Box>
 
-        <Comparison />
+      <Box>
+        <Text bold>Text Animations (New):</Text>
+      </Box>
+      <Box flexDirection="row" gap={2}>
+        <ChaseEffectLTR />
+        <ChaseEffectBounce />
+      </Box>
+
+      <Box flexDirection="row" gap={2}>
+        <BlinkEffect />
+        <GradientEffect />
+        <RainbowEffect />
       </Box>
 
       <Box>

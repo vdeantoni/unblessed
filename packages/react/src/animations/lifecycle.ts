@@ -5,8 +5,17 @@
  * Uses WeakMap to automatically clean up when widgets are garbage collected.
  */
 
-import { Element, makeAnimatable } from "@unblessed/core";
-import { getBorderGenerator, getTextAnimationConfig } from "./presets.js";
+import {
+  Element,
+  generateRainbow,
+  makeAnimatable,
+  rotateColors,
+} from "@unblessed/core";
+import {
+  generateMultiColorGradient,
+  getBorderGenerator,
+  getTextAnimationConfig,
+} from "./presets.js";
 import type { BorderAnimationConfig, TextAnimationConfig } from "./types.js";
 
 /**
@@ -98,6 +107,139 @@ function startTextAnimation(
       return () => {
         clearInterval(interval);
         widget.setContent?.(text); // Restore full text on cleanup
+      };
+    }
+
+    case "chase": {
+      // Chase effect - highlight window moves across text
+      const originalText = fullConfig.text || widget.getContent?.() || "";
+      if (!originalText) {
+        return () => {}; // No text to animate
+      }
+
+      const chars = originalText.split("");
+      let position = fullConfig.direction === "rtl" ? chars.length - 1 : 0;
+      let direction = fullConfig.direction === "rtl" ? -1 : 1;
+
+      const interval = setInterval(() => {
+        const colored = chars
+          .map((char, i) => {
+            // Check if character is in chase window
+            const inWindow =
+              fullConfig.direction === "ltr"
+                ? i >= position && i < position + fullConfig.width
+                : i <= position && i > position - fullConfig.width;
+
+            const color = inWindow
+              ? fullConfig.highlightColor
+              : fullConfig.baseColor;
+            return `{${color}-fg}${char}{/}`;
+          })
+          .join("");
+
+        widget.setContent?.(colored);
+        widget.screen.render();
+
+        // Update position based on mode
+        if (fullConfig.mode === "loop") {
+          position += direction;
+          if (fullConfig.direction === "ltr") {
+            if (position >= chars.length) position = 0;
+          } else {
+            if (position < 0) position = chars.length - 1;
+          }
+        } else {
+          // bounce mode
+          position += direction;
+          if (fullConfig.direction === "ltr") {
+            if (position >= chars.length - fullConfig.width + 1) {
+              direction = -1;
+            } else if (position <= 0) {
+              direction = 1;
+            }
+          } else {
+            if (position < fullConfig.width - 1) {
+              direction = 1;
+            } else if (position >= chars.length - 1) {
+              direction = -1;
+            }
+          }
+        }
+      }, 1000 / fullConfig.fps);
+
+      return () => {
+        clearInterval(interval);
+        widget.setContent?.(originalText); // Restore original text
+      };
+    }
+
+    case "blink": {
+      // Classic terminal blink - binary on/off visibility
+      let visible = true;
+
+      const interval = setInterval(() => {
+        visible = !visible;
+        widget.style.dim = !visible;
+        widget.screen.render();
+      }, fullConfig.duration);
+
+      return () => {
+        clearInterval(interval);
+        widget.style.dim = false; // Restore visibility
+        widget.screen.render();
+      };
+    }
+
+    case "gradient": {
+      // Static gradient across text (not animated)
+      const originalText = fullConfig.text || widget.getContent?.() || "";
+      if (!originalText) {
+        return () => {}; // No text to apply gradient to
+      }
+
+      const chars = originalText.split("");
+      const gradient = generateMultiColorGradient(
+        fullConfig.colors,
+        chars.length,
+      );
+
+      const colored = chars
+        .map((char, i) => `{${gradient[i]}-fg}${char}{/}`)
+        .join("");
+
+      widget.setContent?.(colored);
+      widget.screen.render();
+
+      return () => {
+        widget.setContent?.(originalText); // Restore original text
+      };
+    }
+
+    case "rainbow": {
+      // Animated rainbow colors - each character different color, all rotate
+      const originalText = fullConfig.text || widget.getContent?.() || "";
+      if (!originalText) {
+        return () => {}; // No text to animate
+      }
+
+      const chars = originalText.split("");
+      let frame = 0;
+
+      const interval = setInterval(() => {
+        const rainbow = generateRainbow(chars.length);
+        const rotated = rotateColors(rainbow, frame++);
+
+        const colored = chars
+          .map((char, i) => `{${rotated[i]}-fg}${char}{/}`)
+          .join("");
+
+        widget.setContent?.(colored);
+        widget.screen.render();
+      }, 1000 / fullConfig.fps);
+
+      return () => {
+        clearInterval(interval);
+        widget.setContent?.(originalText); // Restore original text
       };
     }
 

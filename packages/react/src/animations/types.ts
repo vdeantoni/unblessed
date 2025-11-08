@@ -46,7 +46,14 @@ export interface BorderAnimationConfig {
 /**
  * Text animation types
  */
-export type TextAnimationType = "pulse" | "color-cycle" | "typewriter";
+export type TextAnimationType =
+  | "pulse"
+  | "color-cycle"
+  | "typewriter"
+  | "chase"
+  | "blink"
+  | "gradient"
+  | "rainbow";
 
 /**
  * Text animation configuration
@@ -58,19 +65,19 @@ export interface TextAnimationConfig {
   type: TextAnimationType;
 
   /**
-   * Animation speed in frames per second (for color-cycle)
+   * Animation speed in frames per second (for color-cycle, chase, rainbow)
    * @default 30
    */
   fps?: number;
 
   /**
-   * Colors to cycle/pulse through
+   * Colors to cycle/pulse through (for pulse, color-cycle, gradient)
    * @default ["white", "gray", "white"]
    */
   colors?: (string | number)[];
 
   /**
-   * Animation duration in milliseconds (for pulse and typewriter)
+   * Animation duration in milliseconds (for pulse, typewriter, blink)
    * @default 1000
    */
   duration?: number;
@@ -79,6 +86,36 @@ export interface TextAnimationConfig {
    * Text content (for typewriter effect)
    */
   text?: string;
+
+  /**
+   * Base color for non-highlighted characters (for chase)
+   * @default "gray"
+   */
+  baseColor?: string;
+
+  /**
+   * Highlight color for chase window (for chase)
+   * @default "white"
+   */
+  highlightColor?: string;
+
+  /**
+   * Number of characters in chase window (for chase)
+   * @default 3
+   */
+  width?: number;
+
+  /**
+   * Direction of chase movement (for chase)
+   * @default "ltr"
+   */
+  direction?: "ltr" | "rtl";
+
+  /**
+   * Chase mode: loop (wrap around) or bounce (ping-pong) (for chase)
+   * @default "loop"
+   */
+  mode?: "loop" | "bounce";
 }
 
 /**
