@@ -6,6 +6,10 @@
  */
 
 import type { FlexboxProps } from "@unblessed/layout";
+import type {
+  BorderAnimationConfig,
+  TextAnimationConfig,
+} from "../animations/types.js";
 import type { ReactEventProps } from "../types.js";
 
 /**
@@ -38,7 +42,7 @@ export interface BorderProps {
 
 /**
  * Props for interactive widgets (buttons, inputs, etc.)
- * Combines layout, events, focus behavior, and styling
+ * Combines layout, events, focus behavior, styling, and animations
  * Default state style properties are direct props (inherited from StyleObject)
  * State variations use nested objects (hover, focus)
  */
@@ -50,6 +54,44 @@ export interface InteractiveWidgetProps
     Omit<StyleObject, "border"> {
   hover?: StyleObject;
   focus?: StyleObject;
+
+  /**
+   * Declarative border animation configuration
+   * Automatically sets up and manages border color animations
+   *
+   * @example
+   * ```tsx
+   * <Box
+   *   border={1}
+   *   animateBorder={{
+   *     type: "rainbow",
+   *     fps: 30,
+   *   }}
+   * >
+   *   Animated border!
+   * </Box>
+   * ```
+   */
+  animateBorder?: BorderAnimationConfig;
+
+  /**
+   * Declarative text color animation configuration
+   * Automatically sets up and manages text color animations
+   *
+   * @example
+   * ```tsx
+   * <Text
+   *   animateColor={{
+   *     type: "pulse",
+   *     colors: ["red", "yellow", "red"],
+   *     duration: 1000,
+   *   }}
+   * >
+   *   Pulsing text!
+   * </Text>
+   * ```
+   */
+  animateColor?: TextAnimationConfig;
 }
 
 /**

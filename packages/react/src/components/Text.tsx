@@ -10,6 +10,7 @@ import {
 } from "@unblessed/layout";
 import type { ReactNode } from "react";
 import { forwardRef, type PropsWithChildren } from "react";
+import type { TextAnimationConfig } from "../animations/types.js";
 import type { Theme } from "../themes/theme.js";
 import type { StyleObject } from "../widget-descriptors/common-props.js";
 import { buildTextStyles } from "../widget-descriptors/helpers.js";
@@ -26,6 +27,24 @@ export interface TextProps
     > {
   content?: string;
   children?: ReactNode;
+
+  /**
+   * Declarative text color animation configuration
+   *
+   * @example
+   * ```tsx
+   * <Text
+   *   animateColor={{
+   *     type: "pulse",
+   *     colors: ["red", "yellow", "red"],
+   *     duration: 1000,
+   *   }}
+   * >
+   *   Pulsing text!
+   * </Text>
+   * ```
+   */
+  animateColor?: TextAnimationConfig;
 }
 
 /**

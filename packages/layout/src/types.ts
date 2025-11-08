@@ -274,6 +274,23 @@ export interface LayoutNode {
    * This encapsulates all widget configuration and creation logic.
    */
   _descriptor?: WidgetDescriptor;
+
+  /**
+   * Animation cleanup functions
+   * Stores stop functions for active animations that need cleanup on unmount/update.
+   */
+  _animationCleanup?: Array<() => void>;
+
+  /**
+   * Animation configurations from props
+   * Declarative animation configs are stored here and applied after widget creation.
+   */
+  _animations?: {
+    /** Border animation configuration (rainbow, gradient, rotating-colors, custom) */
+    border?: any; // BorderAnimationConfig from @unblessed/react
+    /** Text color animation configuration (pulse, color-cycle, typewriter) */
+    color?: any; // TextAnimationConfig from @unblessed/react
+  };
 }
 
 /**

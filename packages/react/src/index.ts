@@ -95,3 +95,16 @@ export {
   rotateColors,
   type AnimatableMethods,
 } from "@unblessed/core";
+
+// Declarative animation system
+export {
+  borderAnimations,
+  textAnimationDefaults,
+} from "./animations/presets.js";
+export type {
+  AnimationConfigs,
+  BorderAnimationConfig,
+  BorderAnimationType,
+  TextAnimationConfig,
+  TextAnimationType,
+} from "./animations/types.js";

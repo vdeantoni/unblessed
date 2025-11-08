@@ -18,6 +18,10 @@ import {
   NoEventPriority,
 } from "react-reconciler/constants.js";
 import {
+  startTreeAnimations,
+  stopTreeAnimations,
+} from "./animations/animation-integration.js";
+import {
   appendChild,
   createElement,
   createTextNode,
@@ -108,6 +112,15 @@ const reconciler = createReconciler<
     // Store descriptor and event handlers on the layout node
     layoutNode._descriptor = descriptor;
     layoutNode.eventHandlers = descriptor.eventHandlers;
+
+    // Store animation configurations if present
+    if (props.animateBorder || props.animateColor || props.transition) {
+      layoutNode._animations = {
+        border: props.animateBorder,
+        color: props.animateColor,
+        transition: props.transition,
+      };
+    }
 
     return createElement(type, layoutNode, props);
   },
@@ -211,6 +224,22 @@ const reconciler = createReconciler<
     instance.layoutNode.widgetOptions = descriptor.widgetOptions;
     instance.layoutNode.eventHandlers = descriptor.eventHandlers;
     instance.layoutNode._descriptor = descriptor;
+
+    // Update animation configurations if present
+    if (
+      newProps.animateBorder ||
+      newProps.animateColor ||
+      newProps.transition
+    ) {
+      instance.layoutNode._animations = {
+        border: newProps.animateBorder,
+        color: newProps.animateColor,
+        transition: newProps.transition,
+      };
+    } else {
+      // Clear animations if they were removed
+      instance.layoutNode._animations = undefined;
+    }
   },
 
   commitTextUpdate(textInstance, _oldText, newText) {
@@ -223,10 +252,20 @@ const reconciler = createReconciler<
   },
 
   // Commit hooks
-  prepareForCommit: () => null,
+  prepareForCommit(containerInfo) {
+    // Stop all animations before updating widgets
+    // This ensures clean transitions when animation props change
+    if (containerInfo && containerInfo.layoutNode) {
+      stopTreeAnimations(containerInfo.layoutNode);
+    }
+    return null;
+  },
   resetAfterCommit(rootNode) {
     if (rootNode.onComputeLayout) {
       rootNode.onComputeLayout();
+
+      // After layout and widget sync, start animations
+      startTreeAnimations(rootNode.layoutNode);
     }
   },
 
