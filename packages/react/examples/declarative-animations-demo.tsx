@@ -7,7 +7,6 @@
 
 import { NodeRuntime } from "@unblessed/node";
 import { Box, Text, render } from "@unblessed/react";
-import * as React from "react";
 
 /**
  * Demo: Rainbow border animation (declarative)
