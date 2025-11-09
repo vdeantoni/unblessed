@@ -1,3 +1,13 @@
+# [1.0.0-alpha.21](https://github.com/vdeantoni/unblessed/compare/v1.0.0-alpha.20...v1.0.0-alpha.21) (2025-11-09)
+
+
+### Features
+
+* **core:** add ink-style text truncation and wrap caching ([d6241e7](https://github.com/vdeantoni/unblessed/commit/d6241e717d7e07ebae023bdb43bc58ca6d2a3235))
+* **core:** implement textWrap property with ink-style truncation modes ([b1c0c5d](https://github.com/vdeantoni/unblessed/commit/b1c0c5d55cf158f2c6235915bcc2dd117ff4ad62))
+* **react:** add 4 new text animation types (chase, blink, gradient, rainbow) ([dc7bd8d](https://github.com/vdeantoni/unblessed/commit/dc7bd8d561686bc3871bbd1250729ed1672e13a2))
+* **react:** add textWrap support to Box and Text components ([996bced](https://github.com/vdeantoni/unblessed/commit/996bcedf89de65c2160a48ce8899fc247c993dcf))
+
 # [1.0.0-alpha.20](https://github.com/vdeantoni/unblessed/compare/v1.0.0-alpha.19...v1.0.0-alpha.20) (2025-11-08)
 
 
